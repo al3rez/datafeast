@@ -1,9 +1,9 @@
 #!/bin/sh
 set -e
 
-REPO="gloom-sh/gloomberb"
-INSTALL_DIR="${GLOOMBERB_INSTALL_DIR:-$HOME/.local/bin}"
-APP_DIR="${GLOOMBERB_APP_DIR:-/Applications}"
+REPO="al3rez/signalbase-terminal"
+INSTALL_DIR="${SIGNALBASE_INSTALL_DIR:-$HOME/.local/bin}"
+APP_DIR="${SIGNALBASE_APP_DIR:-/Applications}"
 
 # Detect platform
 OS="$(uname -s)"
@@ -35,7 +35,7 @@ if [ "$os" = "darwin" ] && [ "$arch" = "x64" ]; then
   if [ "$translated" = "1" ] || [ "$has_arm64" = "1" ]; then
     arch="arm64"
   else
-    echo "Intel Macs are not supported. Gloomberb currently ships Apple Silicon (arm64) only."
+    echo "Intel Macs are not supported. Signalbase currently ships Apple Silicon (arm64) only."
     exit 1
   fi
 fi
@@ -80,13 +80,13 @@ install_symlink() {
 }
 
 install_macos_app() {
-  ASSET="stable-macos-arm64-Gloomberb.app.zip"
+  ASSET="stable-macos-arm64-Signalbase.app.zip"
   DOWNLOAD_URL="https://github.com/${REPO}/releases/latest/download/${ASSET}"
   TMP_DIR="$(mktemp -d)"
   ZIP_PATH="${TMP_DIR}/${ASSET}"
-  APP_PATH="${TMP_DIR}/Gloomberb.app"
-  DEST_APP="${APP_DIR}/Gloomberb.app"
-  DEST_CLI="${INSTALL_DIR}/gloomberb"
+  APP_PATH="${TMP_DIR}/Signalbase.app"
+  DEST_APP="${APP_DIR}/Signalbase.app"
+  DEST_CLI="${INSTALL_DIR}/signalbase"
 
   echo "Fetching latest macOS release..."
   echo "Downloading ${ASSET}..."
@@ -106,11 +106,11 @@ install_macos_app() {
   fi
 
   if [ ! -d "$APP_PATH" ]; then
-    echo "Error: ${ASSET} did not contain Gloomberb.app"
+    echo "Error: ${ASSET} did not contain Signalbase.app"
     exit 1
   fi
 
-  echo "Installing Gloomberb.app to ${APP_DIR}..."
+  echo "Installing Signalbase.app to ${APP_DIR}..."
   mkdir -p "$APP_DIR" 2>/dev/null || true
   if [ -w "$APP_DIR" ]; then
     rm -rf "$DEST_APP"
@@ -121,21 +121,21 @@ install_macos_app() {
     sudo mv "$APP_PATH" "$DEST_APP"
   fi
 
-  APP_CLI="${DEST_APP}/Contents/Resources/gloomberb"
+  APP_CLI="${DEST_APP}/Contents/Resources/signalbase"
   if [ ! -x "$APP_CLI" ]; then
-    echo "Error: installed app is missing the gloomberb terminal shim"
+    echo "Error: installed app is missing the signalbase terminal shim"
     exit 1
   fi
 
   install_symlink "$APP_CLI" "$DEST_CLI"
   rm -rf "$TMP_DIR"
 
-  echo "Installed Gloomberb.app to ${DEST_APP}"
+  echo "Installed Signalbase.app to ${DEST_APP}"
   echo "Installed terminal command to ${DEST_CLI}"
 }
 
 install_standalone_cli() {
-  ASSET="gloomberb-${os}-${arch}.gz"
+  ASSET="signalbase-${os}-${arch}.gz"
 
   # Get latest release download URL
   echo "Fetching latest release..."
@@ -151,9 +151,9 @@ install_standalone_cli() {
   mv "$TMP" "$TMP.gz"
   gunzip "$TMP.gz"
   chmod +x "$TMP"
-  install_file "$TMP" "$INSTALL_DIR/gloomberb"
+  install_file "$TMP" "$INSTALL_DIR/signalbase"
 
-  echo "Installed gloomberb to ${INSTALL_DIR}/gloomberb"
+  echo "Installed signalbase to ${INSTALL_DIR}/signalbase"
 }
 
 if [ "$os" = "darwin" ]; then
@@ -168,4 +168,4 @@ case ":$PATH:" in
      echo "  export PATH=\"$INSTALL_DIR:\$PATH\"" ;;
 esac
 
-echo "Run 'gloomberb' to start."
+echo "Run 'signalbase' to start."

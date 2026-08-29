@@ -27,7 +27,7 @@ function expectedAssetName(compressed = false): string {
   const os = process.platform === "darwin" ? "darwin" : process.platform === "win32" ? "windows" : "linux";
   const arch = os === "darwin" || process.arch === "arm64" ? "arm64" : "x64";
   const extension = os === "windows" ? ".exe" : "";
-  return compressed ? `gloomberb-${os}-${arch}${extension}.gz` : `gloomberb-${os}-${arch}${extension}`;
+  return compressed ? `signalbase-${os}-${arch}${extension}.gz` : `signalbase-${os}-${arch}${extension}`;
 }
 
 describe("getAssetBaseNameForRuntime", () => {
@@ -35,7 +35,7 @@ describe("getAssetBaseNameForRuntime", () => {
     expect(getAssetBaseNameForRuntime({
       platform: "win32",
       arch: "x64",
-    })).toBe("gloomberb-windows-x64.exe");
+    })).toBe("signalbase-windows-x64.exe");
   });
 });
 
@@ -50,37 +50,37 @@ describe("detectUpdateAction", () => {
   test("uses manual bun updates for bun-managed installs", () => {
     expect(detectUpdateAction(
       "/opt/homebrew/bin/bun",
-      ["/opt/homebrew/bin/bun", "/Users/vince/.bun/install/global/node_modules/gloomberb/bin/gloomberb"],
+      ["/opt/homebrew/bin/bun", "/Users/vince/.bun/install/global/node_modules/signalbase-terminal/bin/signalbase"],
     )).toEqual({
       kind: "manual",
-      command: "bun install -g gloomberb@latest",
+      command: "bun install -g signalbase-terminal@latest",
     });
   });
 
   test("uses manual bun updates for Windows bun-managed installs", () => {
     expect(detectUpdateAction(
       "C:\\Program Files\\Bun\\bun.exe",
-      ["C:\\Program Files\\Bun\\bun.exe", "C:\\Users\\vince\\.bun\\install\\global\\node_modules\\gloomberb\\bin\\gloomberb"],
+      ["C:\\Program Files\\Bun\\bun.exe", "C:\\Users\\vince\\.bun\\install\\global\\node_modules\\signalbase-terminal\\bin\\signalbase"],
     )).toEqual({
       kind: "manual",
-      command: "bun install -g gloomberb@latest",
+      command: "bun install -g signalbase-terminal@latest",
     });
   });
 
   test("uses manual npm updates for node-managed installs", () => {
     expect(detectUpdateAction(
       "/opt/homebrew/bin/node",
-      ["/opt/homebrew/bin/node", "/usr/local/lib/node_modules/gloomberb/bin/gloomberb"],
+      ["/opt/homebrew/bin/node", "/usr/local/lib/node_modules/signalbase-terminal/bin/signalbase"],
     )).toEqual({
       kind: "manual",
-      command: "npm install -g gloomberb@latest",
+      command: "npm install -g signalbase-terminal@latest",
     });
   });
 
   test("does not offer self-update for standalone Windows executables", () => {
     expect(detectUpdateAction(
-      "C:\\Users\\vince\\Downloads\\gloomberb.exe",
-      ["C:\\Users\\vince\\Downloads\\gloomberb.exe"],
+      "C:\\Users\\vince\\Downloads\\signalbase.exe",
+      ["C:\\Users\\vince\\Downloads\\signalbase.exe"],
     )).toBeNull();
   });
 
@@ -100,17 +100,17 @@ describe("detectUpdateAction", () => {
 
   test("does not suggest Bun-managed updates for the bundled macOS app runtime", () => {
     expect(detectUpdateAction(
-      "/Applications/Gloomberb.app/Contents/MacOS/bun",
-      ["/Applications/Gloomberb.app/Contents/MacOS/bun", "/Applications/Gloomberb.app/Contents/Resources/gloomberb-tui/tui-entry.js"],
+      "/Applications/Signalbase.app/Contents/MacOS/bun",
+      ["/Applications/Signalbase.app/Contents/MacOS/bun", "/Applications/Signalbase.app/Contents/Resources/signalbase-tui/tui-entry.js"],
     )).toBeNull();
   });
 
   test("does not suggest Bun-managed updates for the bundled Windows app TUI runtime", () => {
     expect(detectUpdateAction(
-      "C:\\Users\\vince\\AppData\\Local\\Programs\\Gloomberb\\bin\\bun.exe",
+      "C:\\Users\\vince\\AppData\\Local\\Programs\\Signalbase\\bin\\bun.exe",
       [
-        "C:\\Users\\vince\\AppData\\Local\\Programs\\Gloomberb\\bin\\bun.exe",
-        "C:\\Users\\vince\\AppData\\Local\\Programs\\Gloomberb\\Resources\\gloomberb-tui\\tui-entry.js",
+        "C:\\Users\\vince\\AppData\\Local\\Programs\\Signalbase\\bin\\bun.exe",
+        "C:\\Users\\vince\\AppData\\Local\\Programs\\Signalbase\\Resources\\signalbase-tui\\tui-entry.js",
       ],
     )).toBeNull();
   });
@@ -334,7 +334,7 @@ describe("performUpdate", () => {
       tagName: "v9.9.9",
       downloadUrl: "https://example.com/gloomberb-darwin-arm64",
       publishedAt: "2026-04-01T00:00:00Z",
-      updateAction: { kind: "manual", command: "bun install -g gloomberb@latest" },
+      updateAction: { kind: "manual", command: "bun install -g signalbase-terminal@latest" },
     };
 
     await performUpdate(release, (entry) => {
@@ -344,7 +344,7 @@ describe("performUpdate", () => {
     expect(progress).toEqual([
       {
         phase: "error",
-        error: "Run bun install -g gloomberb@latest",
+        error: "Run bun install -g signalbase-terminal@latest",
       },
     ]);
   });
@@ -375,7 +375,7 @@ describe("performUpdate", () => {
       expect(progress).toEqual([
         {
           phase: "error",
-          error: "Self-update is unavailable when running from source or via Bun/Node. Relaunch the packaged gloomberb binary to update.",
+          error: "Self-update is unavailable when running from source or via Bun/Node. Relaunch the packaged Signalbase binary to update.",
         },
       ]);
     } finally {

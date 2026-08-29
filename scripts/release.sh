@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO="gloom-sh/gloomberb"
+REPO="al3rez/signalbase-terminal"
 
 usage() {
   cat <<'EOF'

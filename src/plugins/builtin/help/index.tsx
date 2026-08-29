@@ -30,7 +30,7 @@ const HELP_TABS = [
 ] as const;
 
 type HelpTabId = typeof HELP_TABS[number]["value"];
-const GLOOMBERB_ISSUES_URL = "https://github.com/gloom-sh/gloomberb/issues";
+const SIGNALBASE_ISSUES_URL = "https://github.com/al3rez/signalbase-terminal/issues";
 
 function HelpPane({ focused, width, height }: PaneProps) {
   const registry = getSharedRegistry();
@@ -300,7 +300,7 @@ function HelpPane({ focused, width, height }: PaneProps) {
             <Box flexDirection="row" gap={1}>
               <Button label="Open Debug Log" onPress={openDebugLog} />
               <ExternalLinkText
-                url={GLOOMBERB_ISSUES_URL}
+              url={SIGNALBASE_ISSUES_URL}
                 label={t("GitHub Issues")}
               />
             </Box>

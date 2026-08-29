@@ -32,7 +32,7 @@ describe("normalizeChangelogRelease", () => {
     expect(release?.id).toBe("v1.0.0");
     expect(release?.title).toBe("v1.0.0");
     expect(release?.body).toBe("No changelog details were published for this release.");
-    expect(release?.url).toBe("https://github.com/gloom-sh/gloomberb/releases/tag/v1.0.0");
+    expect(release?.url).toBe("https://github.com/al3rez/signalbase-terminal/releases/tag/v1.0.0");
   });
 
   test("drops malformed releases without a tag", () => {
