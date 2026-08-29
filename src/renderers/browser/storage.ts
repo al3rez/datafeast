@@ -43,8 +43,8 @@ export class SafeJsonStorage<T> {
 }
 
 export const BROWSER_STORAGE_KEYS = {
-  config: "gloomberb.web.config.v1",
-  tickers: "gloomberb.web.tickers.v1",
-  pluginState: "gloomberb.web.plugin-state.v1",
-  session: "gloomberb.web.session.v1",
+  config: "signalbase.web.config.v1",
+  tickers: "signalbase.web.tickers.v1",
+  pluginState: "signalbase.web.plugin-state.v1",
+  session: "signalbase.web.session.v1",
 } as const;

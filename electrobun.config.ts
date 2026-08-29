@@ -1,16 +1,16 @@
 import type { ElectrobunConfig } from "electrobun/bun";
 import pkg from "./package.json";
 
-const RELEASE_BASE_URL = "https://github.com/gloom-sh/gloomberb/releases/latest/download";
+const RELEASE_BASE_URL = "https://github.com/al3rez/signalbase-terminal/releases/latest/download";
 const GENERATE_RELEASE_PATCH = process.platform !== "win32";
 
 const config: ElectrobunConfig = {
   app: {
-    name: "Gloomberb",
-    identifier: "com.vincelwt.gloomberb",
+    name: "Signalbase",
+    identifier: "dev.signalbase.terminal",
     version: pkg.version,
     description: pkg.description,
-    urlSchemes: ["gloomberb"],
+    urlSchemes: ["signalbase"],
   },
   build: {
     bun: {

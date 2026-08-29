@@ -5,7 +5,7 @@ import type {
 } from "../types/plugin";
 import { debugLog } from "../utils/debug-log";
 
-const DEFAULT_NOTIFICATION_TITLE = "Gloomberb";
+const DEFAULT_NOTIFICATION_TITLE = "Signalbase";
 const notificationLog = debugLog.createLogger("notifications");
 
 function getRuntimePlatform(): NodeJS.Platform {

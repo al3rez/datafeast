@@ -2,6 +2,14 @@ import { describe, expect, test } from "bun:test";
 import { resolveDesktopDeepLinkAction } from "./desktop-deeplink";
 
 describe("desktop deeplinks", () => {
+  test("accepts the Signalbase scheme", () => {
+    expect(resolveDesktopDeepLinkAction("signalbase://layout/0123456789abcdef0123456789abcdef")).toEqual({
+      type: "open-layout",
+      id: "0123456789abcdef0123456789abcdef",
+      message: "Added shared layout.",
+    });
+  });
+
   test("routes cloud roundup links to account management", () => {
     expect(resolveDesktopDeepLinkAction("gloomberb://cloud/roundup?week=2026-07-03")).toEqual({
       type: "open-account-management",

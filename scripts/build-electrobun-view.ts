@@ -16,12 +16,12 @@ await writeElectrobunViewPage({
   pluginName: "electrobun-renderer-native-bridges",
   failureMessage: "Failed to build Electrobun view assets",
   missingEntryMessage: "Electrobun view build did not produce a JavaScript entrypoint",
-  title: "Gloomberb",
-  loadingText: "Loading Gloomberb...",
+  title: "Signalbase",
+  loadingText: "Loading Signalbase...",
   bootstrapScript: `
       const bootstrapFatalHtml = [
         '<div class="gloom-fatal">',
-        '<h1>Gloomberb failed to start</h1>',
+        '<h1>Signalbase failed to start</h1>',
         '<div class="gloom-fatal-actions">',
         '<button type="button" data-variant="primary" data-action="reload">Reload window</button>',
         '<button type="button" data-action="copy">Copy error</button>',
@@ -59,6 +59,6 @@ await writeElectrobunViewPage({
         "error",
       ));
       window.addEventListener("unhandledrejection", (event) => renderBootstrapError(event.reason, "", "unhandledrejection"));
-      document.getElementById("root").innerHTML = '<div class="gloom-loading">Booting Gloomberb renderer...</div>';
+      document.getElementById("root").innerHTML = '<div class="gloom-loading">Booting Signalbase renderer...</div>';
 `,
 });

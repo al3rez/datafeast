@@ -31,6 +31,7 @@ import { createDesktopWindowBridge } from "./desktop/window/bridge";
 import { prepareDetachedSnapshot } from "./desktop/window/snapshot";
 import { createElectrobunAppServices } from "./app-services";
 import { getRendererBuiltinPlugins } from "../../../plugins/catalog-ui";
+import { createWebAnalyticsLaunchRequest } from "../../../plugins/builtin/web-analytics";
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {
@@ -43,9 +44,9 @@ const bootLog = debugLog.createLogger("electrobun-web-boot");
 let appMounted = false;
 
 appRootElement.tabIndex = -1;
-root.render(<div className="gloom-loading">Starting Gloomberb...</div>);
+root.render(<div className="gloom-loading">Starting Signalbase...</div>);
 
-function renderFatalError(error: unknown, details?: string, title = "Gloomberb failed to start"): void {
+function renderFatalError(error: unknown, details?: string, title = "Signalbase failed to start"): void {
   root.render(
     <DesktopFatalScreen
       title={title}
@@ -60,7 +61,7 @@ window.__gloomRenderFatalError = (error, details, source) => {
   if (appMounted && source === "unhandledrejection") {
     return;
   }
-  renderFatalError(error, details, "Gloomberb crashed");
+  renderFatalError(error, details, "Signalbase crashed");
 };
 
 function focusWebSurface(): void {
@@ -114,6 +115,7 @@ async function boot() {
                   config={config}
                   servicesFactory={createElectrobunAppServices}
                   plugins={getRendererBuiltinPlugins()}
+                  cliLaunchRequest={createWebAnalyticsLaunchRequest()}
                   desktopWindowBridge={desktopWindowBridge}
                   desktopApplicationMenuBridge={desktopApplicationMenuBridge}
                   desktopDeepLinkBridge={desktopDeepLinkBridge}

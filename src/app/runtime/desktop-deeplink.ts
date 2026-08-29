@@ -80,7 +80,8 @@ function parseGloomUrl(rawUrl: string): ParsedGloomUrl | null {
   } catch {
     return null;
   }
-  if (url.protocol !== "gloomberb:") return null;
+  // Keep upstream links working while making Signalbase the primary scheme.
+  if (url.protocol !== "signalbase:" && url.protocol !== "gloomberb:") return null;
 
   const host = url.hostname.trim().toLowerCase();
   if (host) {

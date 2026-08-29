@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "gloomberb-web",
+  "name": "signalbase-terminal",
   "main": "src/renderers/cloudflare/worker.ts",
   "compatibility_date": "2026-08-21",
   "assets": {

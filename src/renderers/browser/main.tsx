@@ -20,13 +20,14 @@ import {
 import { BROWSER_DATA_DIR, installBrowserConfigStore } from "./config-host";
 import { browserRendererHost, browserUiHost } from "./ui-host";
 import { createBrowserDeepLinkBridge } from "./deeplink-bridge";
+import { createWebAnalyticsLaunchRequest } from "../../plugins/builtin/web-analytics";
 
 const rootElement = document.getElementById("root");
 if (!rootElement) throw new Error("Missing root element");
 const appRootElement = rootElement;
 appRootElement.tabIndex = -1;
 const root = createRoot(appRootElement);
-root.render(<div className="gloom-loading">Starting Gloomberb...</div>);
+root.render(<div className="gloom-loading">Starting Signalbase...</div>);
 
 async function boot(): Promise<void> {
   installBrowserConfigStore();
@@ -46,6 +47,7 @@ async function boot(): Promise<void> {
                 config={config}
                 servicesFactory={createBrowserAppServices}
                 plugins={getBrowserBuiltinPlugins()}
+                cliLaunchRequest={createWebAnalyticsLaunchRequest()}
                 desktopDeepLinkBridge={deepLinkBridge}
                 updatesEnabled={false}
               />
@@ -60,5 +62,5 @@ async function boot(): Promise<void> {
 
 void boot().catch((error) => {
   const message = error instanceof Error ? error.message : String(error);
-  root.render(<div className="gloom-fatal"><h1>Gloomberb failed to start</h1><pre>{message}</pre></div>);
+  root.render(<div className="gloom-fatal"><h1>Signalbase failed to start</h1><pre>{message}</pre></div>);
 });

@@ -51,5 +51,5 @@ async function buildPage(name: string, entrypoint: string, title: string, loadin
 </html>\n`);
 }
 
-await buildPage("app", join(root, "src/renderers/browser/main.tsx"), "Gloomberb", "Loading Gloomberb...", "index.html");
-await buildPage("share", join(root, "src/renderers/share/main.tsx"), "Gloomberb Share", "Loading shared view...", "share.html");
+await buildPage("app", join(root, "src/renderers/browser/main.tsx"), "Signalbase", "Loading Signalbase...", "index.html");
+await buildPage("share", join(root, "src/renderers/share/main.tsx"), "Signalbase Share", "Loading shared view...", "share.html");

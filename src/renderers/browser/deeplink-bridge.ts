@@ -8,11 +8,11 @@ export function createBrowserDeepLinkBridge(): DesktopDeepLinkBridge {
       const emit = () => {
         const layoutId = marketplaceLayoutIdFromSearch(window.location.search);
         if (layoutId) {
-          listener({ url: `gloomberb://layout/${layoutId}` });
+          listener({ url: `signalbase://layout/${layoutId}` });
           return;
         }
         const shareId = paneShareIdFromSearch(window.location.search);
-        if (shareId) listener({ url: `gloomberb://share/${shareId}` });
+        if (shareId) listener({ url: `signalbase://share/${shareId}` });
       };
       emit();
       window.addEventListener("popstate", emit);

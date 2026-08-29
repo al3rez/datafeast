@@ -151,7 +151,7 @@ export class DesktopDetachedWindowManager<Rpc extends DesktopStateRpc> {
   private resolveTitle(instanceId: string): string {
     const config = this.options.getCurrentConfig();
     const instance = config ? findPaneInstance(config.layout, instanceId) : null;
-    if (!instance) return "Gloomberb";
+    if (!instance) return "Signalbase";
     return instance.title?.trim() || instance.paneId;
   }
 

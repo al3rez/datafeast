@@ -112,9 +112,9 @@ function requireDesktopWorkspace(): DesktopWorkspace {
 
 const pendingDesktopDeepLinks: string[] = [];
 
-function isGloomberbDeepLink(rawUrl: string): boolean {
+function isSignalbaseDeepLink(rawUrl: string): boolean {
   try {
-    return new URL(rawUrl).protocol === "gloomberb:";
+    return new URL(rawUrl).protocol === "signalbase:";
   } catch {
     return false;
   }
@@ -128,7 +128,7 @@ function readOpenUrlEvent(event: unknown): string | null {
 }
 
 function sendDesktopDeepLink(rawUrl: string): void {
-  if (!isGloomberbDeepLink(rawUrl)) return;
+  if (!isSignalbaseDeepLink(rawUrl)) return;
   const rpc = getWindowRpc(MAIN_WINDOW_RPC_KEY);
   if (!rpc || !isWindowRpcReady(MAIN_WINDOW_RPC_KEY)) {
     pendingDesktopDeepLinks.push(rawUrl);
@@ -616,7 +616,7 @@ const initialMainWindowFrame = normalizeWindowFrameWithMinimum(
 );
 
 mainWindow = new BrowserWindow({
-  title: "Gloomberb",
+  title: "Signalbase",
   frame: initialMainWindowFrame,
   url: "views://mainview/index.html",
   renderer: desktopWindowRenderer(),
@@ -626,8 +626,8 @@ mainWindow = new BrowserWindow({
   navigationRules: JSON.stringify(["views://*"]),
   sandbox: false,
 });
-applyWindowsWindowIcon("Gloomberb");
-applyWindowsCustomChrome("Gloomberb");
+applyWindowsWindowIcon("Signalbase");
+applyWindowsCustomChrome("Signalbase");
 updateWindowFrameCache(mainWindow, initialMainWindowFrame, MAIN_WINDOW_MIN_SIZE);
 detachedWindowManager.focusWindowForRpcKey(MAIN_WINDOW_RPC_KEY);
 (mainWindow as any).on?.("move", (event: WindowMoveEvent) => {

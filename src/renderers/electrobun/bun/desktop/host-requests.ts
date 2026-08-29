@@ -137,7 +137,7 @@ export async function handleDesktopHostRequest<TRpc>({
     case "host.notify":
       playNotificationSound(normalizeText(request.payload.sound));
       Utils.showNotification({
-        title: normalizeText(request.payload.title) ?? "Gloomberb",
+        title: normalizeText(request.payload.title) ?? "Signalbase",
         body: normalizeText(request.payload.body),
         subtitle: normalizeText(request.payload.subtitle),
         silent: true,

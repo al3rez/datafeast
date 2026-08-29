@@ -53,7 +53,7 @@ const POLL_BACKOFF_FACTOR = 2;
 
 function defaultClientName(): string {
   const name = typeof process !== "undefined" ? process.env.HOSTNAME?.trim() : "";
-  return name && name !== "localhost" ? name : "Gloomberb";
+  return name && name !== "localhost" ? name : "Signalbase";
 }
 
 function defaultClientPlatform(): string | undefined {

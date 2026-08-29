@@ -10,6 +10,7 @@ describe("browser plugin catalog", () => {
   test("contains the reviewed cloud, local, market, and research plugins", () => {
     expect(ids).toEqual([
       "gloomberb-cloud",
+      "web-analytics",
       "portfolio",
       "ticker-research",
       "application",

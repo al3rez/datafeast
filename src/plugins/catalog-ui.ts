@@ -19,9 +19,11 @@ import {
   portfolioPlugin,
 } from "./builtin/composite-plugins";
 import { tickerResearchPlugin } from "./builtin/ticker-research-plugin";
+import { webAnalyticsPlugin } from "./builtin/web-analytics";
 
 export const uiBuiltinPlugins: GloomPlugin[] = [
   gloomberbCloudPlugin,
+  webAnalyticsPlugin,
   portfolioPlugin,
   tickerResearchPlugin,
   brokerPlugin,

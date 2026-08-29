@@ -1,27 +1,19 @@
 import { Box, SpinnerMark, Text, TextAttributes, useRendererHost, useUiCapabilities } from "../../ui";
-import { useCallback, useEffect, useState, type ReactNode } from "react";
-import { blendHex, priceColor } from "../../theme/colors";
+import { useCallback, useEffect, type ReactNode } from "react";
+import { blendHex } from "../../theme/colors";
 import { useThemeColors } from "../../theme/theme-context";
-import { useAppActive } from "../../state/app/activity";
 import { useAppDispatch, useAppSelector } from "../../state/app/context";
 import {
-  selectBaseCurrency,
   selectUpdateAvailable,
   selectUpdateCheckInProgress,
   selectUpdateNotice,
   selectUpdateProgress,
 } from "../../state/selectors-ui";
-import { getSharedMarketDataCoordinator } from "../../market-data/coordinator";
 import { t, tf } from "../../i18n";
-import { useQuoteEntry, useResolvedEntryValue } from "../../market-data/hooks";
-import { formatPercentRaw } from "../../utils/format";
-import { formatMarketPrice } from "../../market-data/market/format";
-import { getActiveQuoteDisplay, marketStateColor, marketStateCountdown, marketStateLabel } from "../../market-data/market/status";
 import { VERSION } from "../../version";
 import { getTitlebarLeadingInset } from "./titlebar-overlay";
 import { WindowControls, WINDOWS_CONTROL_GROUP_WIDTH_PX } from "./window-controls";
 
-const SPY_REFRESH_MS = 5 * 60_000; // 5 min
 const UPDATE_NOTICE_DURATION_MS = 5_000;
 
 type HeaderActionEvent = {
@@ -162,52 +154,13 @@ export function Header({
 }) {
   const colors = useThemeColors();
   const rendererHost = useRendererHost();
-  const baseCurrency = useAppSelector(selectBaseCurrency);
-  const appActive = useAppActive();
   const { titleBarOverlay, nativeWindowChrome = titleBarOverlay, windowControls } = useUiCapabilities();
   const showWindowControls = nativeWindowChrome && windowControls === "windows";
   const titlebarLeadingInset = titleBarOverlay && nativeWindowChrome ? getTitlebarLeadingInset() : 0;
-  const spyQuoteEntry = useQuoteEntry("SPY", null);
-  const spyQuote = useResolvedEntryValue(spyQuoteEntry);
-  const mktState = spyQuote?.marketState;
-  const [now, setNow] = useState(Date.now());
-
-  useEffect(() => {
-    if (!appActive || (mktState !== "PRE" && mktState !== "REGULAR")) return;
-    setNow(Date.now());
-    const id = setInterval(() => setNow(Date.now()), 1_000);
-    return () => clearInterval(id);
-  }, [appActive, mktState]);
-
-  useEffect(() => {
-    if (!appActive) return;
-    const coordinator = getSharedMarketDataCoordinator();
-    if (!coordinator) return;
-    const fetchSpy = async () => {
-      await coordinator.loadQuote({ symbol: "SPY" }).catch(() => {});
-    };
-    fetchSpy();
-    const id = setInterval(fetchSpy, SPY_REFRESH_MS);
-    return () => { clearInterval(id); };
-  }, [appActive]);
-
-  const activeSpyQuote = getActiveQuoteDisplay(spyQuote);
-  const spyColor = activeSpyQuote ? priceColor(activeSpyQuote.change, colors) : colors.headerText;
-  const spyText = activeSpyQuote
-    ? `SPY ${formatMarketPrice(activeSpyQuote.price, { assetCategory: "ETF" })} ${formatPercentRaw(activeSpyQuote.changePercent)}`
-    : "SPY —";
-
   const startWindowDrag = useCallback(() => {
     if (!titleBarOverlay || !nativeWindowChrome) return;
     void rendererHost.startWindowDrag?.();
   }, [nativeWindowChrome, rendererHost, titleBarOverlay]);
-
-  // Market status
-  const mktCountdown = mktState ? marketStateCountdown(mktState, now) : null;
-  const mktLabel = mktState
-    ? `${t(marketStateLabel(mktState))}${mktCountdown ? ` · ${mktCountdown}` : ""}`
-    : "";
-  const mktColor = mktState ? marketStateColor(mktState, colors) : colors.headerText;
 
   const openChangelog = useCallback((event?: HeaderActionEvent) => {
     event?.preventDefault?.();
@@ -240,7 +193,7 @@ export function Header({
       >
         <Box paddingLeft={titlebarLeadingInset} flexDirection="row" alignItems="center" gap={1}>
           <Text attributes={TextAttributes.BOLD} fg={colors.headerText}>
-            Gloomberb
+            Signalbase
           </Text>
           <DesktopHeaderPill
             backgroundColor={blendHex(colors.header, colors.headerText, 0.1)}
@@ -283,21 +236,8 @@ export function Header({
             <Text fg={blendHex(colors.headerText, colors.header, 0.38)} style={{ marginLeft: 6, fontSize: 10 }}>?</Text>
           </Box>
         ) : null}
-        {mktLabel ? (
-          <Box paddingRight={1}>
-            <DesktopHeaderPill
-              backgroundColor={blendHex(colors.header, mktColor, 0.12)}
-              borderColor={blendHex(colors.border, mktColor, 0.3)}
-            >
-              <Text fg={mktColor} style={{ fontSize: 11, fontWeight: 700 }}>{mktLabel}</Text>
-            </DesktopHeaderPill>
-          </Box>
-        ) : null}
         <Box paddingRight={1}>
-          <Text fg={spyColor}>{spyText}</Text>
-        </Box>
-        <Box paddingRight={showWindowControls ? 1 : 0}>
-          <Text fg={colors.headerText}>{baseCurrency}</Text>
+          <Text fg={colors.headerText}>GA4 + STRIPE</Text>
         </Box>
         {showWindowControls ? <Box flexShrink={0} width={`${WINDOWS_CONTROL_GROUP_WIDTH_PX}px`} /> : null}
         {showWindowControls ? <WindowControls /> : null}
@@ -315,7 +255,7 @@ export function Header({
       onMouseDown={startWindowDrag}
     >
       <Box paddingLeft={titleBarOverlay ? titlebarLeadingInset : 1} flexDirection="row">
-        <Text attributes={TextAttributes.BOLD} fg={colors.headerText}>Gloomberb </Text>
+        <Text attributes={TextAttributes.BOLD} fg={colors.headerText}>Signalbase </Text>
         <Box
           data-gloom-interactive={onOpenChangelog ? "true" : undefined}
           role={onOpenChangelog ? "button" : undefined}
@@ -334,18 +274,8 @@ export function Header({
       <Box flexGrow={1} paddingLeft={2}>
         <UpdateStatus />
       </Box>
-      {mktLabel && (
-        <Box paddingRight={1}>
-          <Text fg={mktColor}>{mktLabel}</Text>
-        </Box>
-      )}
       <Box paddingRight={1}>
-        <Text fg={spyColor}>{spyText}</Text>
-      </Box>
-      <Box paddingRight={1}>
-        <Text fg={colors.headerText}>
-          {baseCurrency}
-        </Text>
+        <Text fg={colors.headerText}>GA4 + STRIPE</Text>
       </Box>
       {showWindowControls ? <WindowControls /> : null}
     </Box>

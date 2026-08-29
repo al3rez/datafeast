@@ -21,7 +21,7 @@ describe("browser social share handoff", () => {
     });
     const seen: string[] = [];
     createBrowserDeepLinkBridge().subscribe((deeplink) => seen.push(deeplink.url));
-    expect(seen).toEqual([`gloomberb://share/${id}`]);
+    expect(seen).toEqual([`signalbase://share/${id}`]);
   });
 
   test("prefers a shared layout query", () => {
@@ -36,6 +36,6 @@ describe("browser social share handoff", () => {
     });
     const seen: string[] = [];
     createBrowserDeepLinkBridge().subscribe((deeplink) => seen.push(deeplink.url));
-    expect(seen).toEqual([`gloomberb://layout/${id}`]);
+    expect(seen).toEqual([`signalbase://layout/${id}`]);
   });
 });

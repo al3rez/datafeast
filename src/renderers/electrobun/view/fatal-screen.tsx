@@ -27,7 +27,7 @@ function formatFatalError(error: unknown, details?: string): string {
 }
 
 export function DesktopFatalScreen({
-  title = "Gloomberb crashed",
+  title = "Signalbase crashed",
   error,
   details,
   source,
@@ -104,7 +104,7 @@ export class ElectrobunErrorBoundary extends Component<
     if (this.state.hasError) {
       return (
         <DesktopFatalScreen
-          title="Gloomberb crashed"
+          title="Signalbase crashed"
           error={this.state.error}
           details={this.state.details}
           source="react-error-boundary"

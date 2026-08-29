@@ -473,6 +473,7 @@ export function App({
   const [showOnboarding, setShowOnboarding] = useState(() => (
     desktopWindowBridge?.kind !== "detached"
     && !shareHandoff
+    && !cliLaunchRequest
     && (!effectiveInitialConfig.onboardingComplete || !!effectiveInitialConfig.onboardingProgress)
   ));
 

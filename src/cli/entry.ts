@@ -8,6 +8,7 @@ import {
   smokeOpenTuiNative,
   smokeOpenTuiRuntime,
 } from "./native-smoke";
+import { createWebAnalyticsLaunchRequest } from "../plugins/builtin/web-analytics";
 
 async function launchOpenTuiApp(options: {
   externalPlugins: Awaited<ReturnType<typeof loadExternalPlugins>>;
@@ -39,12 +40,16 @@ export async function runCliEntrypoint(rawArgs = process.argv.slice(2)): Promise
   const externalPlugins = await loadExternalPlugins();
 
   if (!command) {
-    await launchOpenTuiApp({ externalPlugins });
+    await launchOpenTuiApp({ externalPlugins, cliLaunchRequest: createWebAnalyticsLaunchRequest() });
     return;
   }
 
   if (command === "launch-ui" || command === "ui") {
-    await launchOpenTuiApp({ externalPlugins, cliArgs: rawArgs.slice(1) });
+    await launchOpenTuiApp({
+      externalPlugins,
+      cliArgs: rawArgs.slice(1),
+      cliLaunchRequest: createWebAnalyticsLaunchRequest(),
+    });
     return;
   }
 

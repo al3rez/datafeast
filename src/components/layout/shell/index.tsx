@@ -1,4 +1,4 @@
-import { AsciiText, Box, Text, compactContextMenuItems, useContextMenu, useUiHost, type BoxRenderable } from "../../../ui";
+import { Box, Text, compactContextMenuItems, useContextMenu, useUiHost, type BoxRenderable } from "../../../ui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRendererHost, useUiCapabilities } from "../../../ui";
 import { useViewport } from "../../../react/input";
@@ -630,7 +630,7 @@ export function Shell({
         justifyContent="center"
       >
         <Box flexDirection="column" alignItems="center">
-          <AsciiText text="Gloomberb" font="wordmark" color={colors.textMuted} />
+          <Text fg={colors.textMuted}>SIGNALBASE</Text>
           <Box height={1} />
           <Text fg={colors.textDim}>Ctrl+P to get started.</Text>
         </Box>
