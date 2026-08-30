@@ -30,6 +30,8 @@ export interface GloomSlots {
   "command:extra": { query: string };
   "command:preset": Record<string, never>;
   "status:widget": Record<string, never>;
+  "header:navigation": Record<string, never>;
+  "header:actions": Record<string, never>;
   "config:section": Record<string, never>;
   "data:post-refresh": { ticker: string; financials: TickerFinancials };
   "data:enricher": { ticker: TickerRecord };
@@ -74,6 +76,8 @@ export interface PaneDef {
   portableShare?: PanePortableShareDef;
   /** Compact controls surfaced next to the pane title. Toggle keys reference toggle fields in settings. */
   quickSettings?: readonly PaneQuickSettingDef[];
+  /** Omit docked terminal chrome when the layout dividers already label the structure. */
+  hideTerminalDockedHeader?: boolean;
 }
 
 export interface PaneQuickSettingDef {

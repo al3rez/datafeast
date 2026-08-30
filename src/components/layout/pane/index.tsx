@@ -1,10 +1,10 @@
-import { Box, useUiCapabilities } from "../../../ui";
+import { Box, useUiCapabilities, useUiHost } from "../../../ui";
 import type { ReactNode } from "react";
 import { paneBg } from "../../../theme/colors";
 import { PaneBodyFrame, getPaneWindowAttributes } from "./frame";
 import { PaneHeader, type PaneHeaderQuickSetting } from "./header";
 import { hasPaneFooterContent, PaneFooterBar, type CombinedPaneFooter } from "./footer";
-import { resolvePaneBodyFrame, shouldReservePaneFooter } from "./sizing";
+import { resolvePaneBodyFrame, shouldReservePaneFooter, TERMINAL_DOCKED_PANE_HEADER_ROWS } from "./sizing";
 
 interface PaneWrapperProps {
   paneId?: string;
@@ -14,6 +14,7 @@ interface PaneWrapperProps {
   width?: number;
   height?: number | `${number}%` | "auto";
   flexGrow?: number;
+  hideTerminalDockedHeader?: boolean;
   showActions?: boolean;
   quickSettings?: PaneHeaderQuickSetting[];
   onMouseDown?: (event: any) => void;
@@ -36,6 +37,7 @@ export function PaneWrapper({
   width = 0,
   height,
   flexGrow,
+  hideTerminalDockedHeader = false,
   showActions = false,
   quickSettings,
   onMouseDown,
@@ -50,7 +52,7 @@ export function PaneWrapper({
   children,
 }: PaneWrapperProps) {
   const { nativePaneChrome } = useUiCapabilities();
-  const bg = paneBg(focused);
+  const bg = useUiHost().kind === "opentui" ? "transparent" : paneBg(focused);
   const showFooter = hasPaneFooterContent(footer);
   const reserveFooter = !!title && shouldReservePaneFooter(nativePaneChrome, showFooter);
   const renderFooter = !!title && (reserveFooter || showFooter);
@@ -59,7 +61,7 @@ export function PaneWrapper({
     nativePaneChrome,
     footerVisible: renderFooter,
     reserveFooter,
-    headerRows: title ? 1 : 0,
+    headerRows: title ? nativePaneChrome ? 1 : hideTerminalDockedHeader ? 0 : TERMINAL_DOCKED_PANE_HEADER_ROWS : 0,
   });
 
   return (
@@ -82,7 +84,7 @@ export function PaneWrapper({
       onMouseDown={onMouseDown}
       onMouseDownCapture={onMouseDownCapture}
     >
-      {title && (
+      {title && (nativePaneChrome || !hideTerminalDockedHeader) && (
         <PaneHeader
           title={title}
           width={width}

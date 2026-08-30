@@ -1,4 +1,4 @@
-import { Box, Text, compactContextMenuItems, useContextMenu, useUiHost, type BoxRenderable } from "../../../ui";
+import { Box, compactContextMenuItems, useContextMenu, useUiHost, type BoxRenderable } from "../../../ui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRendererHost, useUiCapabilities } from "../../../ui";
 import { useViewport } from "../../../react/input";
@@ -29,7 +29,6 @@ import {
   selectLayout,
   selectStatusBarVisible,
 } from "../../../state/selectors-ui";
-import { useThemeColors } from "../../../theme/theme-context";
 import { getPaneDisplayTitle } from "../pane/title";
 import type { PaneHeaderQuickSetting } from "../pane/header";
 import { getShortcutDisplayMode } from "../../../utils/shortcut-labels";
@@ -97,7 +96,6 @@ export function Shell({
   desktopDockPreview,
   commandBarNativeOccluder = null,
 }: ShellProps) {
-  const colors = useThemeColors();
   const dispatch = useAppDispatch();
   const config = useAppSelector((state) => state.config);
   const paneState = useAppSelector((state) => state.paneState);
@@ -620,22 +618,6 @@ export function Shell({
       {/* Render nothing; give the auth commands always-mounted components with dialog access. */}
       <DeviceSignInDialogHost />
       <AuthDialogHost />
-      <Box
-        position="absolute"
-        left={0}
-        top={0}
-        width={width}
-        height={contentHeight}
-        alignItems="center"
-        justifyContent="center"
-      >
-        <Box flexDirection="column" alignItems="center">
-          <Text fg={colors.textMuted}>SIGNALBASE</Text>
-          <Box height={1} />
-          <Text fg={colors.textDim}>Ctrl+P to get started.</Text>
-        </Box>
-      </Box>
-
       <ShellPaneLayers
         contentHeight={contentHeight}
         dividerPreview={dividerPreview}

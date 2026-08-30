@@ -1,4 +1,4 @@
-import { Box, ContextMenuProvider, useNativeRenderer, useRendererHost } from "./ui";
+import { Box, ContextMenuProvider, useNativeRenderer, useRendererHost, useUiHost } from "./ui";
 import { ToastViewport, useToastHost } from "./ui/toast";
 import { useState, useEffect, useCallback, useRef, useMemo, type ReactNode } from "react";
 import {
@@ -75,6 +75,7 @@ interface AppInnerProps {
 
 function ThemedAppRoot({ children }: { children: ReactNode }) {
   const themeColors = useThemeColors();
+  const transparent = useUiHost().kind === "opentui";
   return (
     <Box
       flexDirection="column"
@@ -84,7 +85,7 @@ function ThemedAppRoot({ children }: { children: ReactNode }) {
       minWidth={0}
       minHeight={0}
       overflow="hidden"
-      backgroundColor={themeColors.bg}
+      backgroundColor={transparent ? "transparent" : themeColors.bg}
     >
       {children}
     </Box>

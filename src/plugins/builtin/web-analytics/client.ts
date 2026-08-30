@@ -34,14 +34,43 @@ interface StripeSession {
   amount_total?: number | null;
   currency?: string | null;
   created?: number;
+  mode?: string;
   payment_status?: string;
   status?: string;
-  customer_details?: { name?: string | null; email?: string | null } | null;
+  customer?: string | { id?: string } | null;
+  subscription?: string | { id?: string } | null;
+  customer_details?: {
+    name?: string | null;
+    email?: string | null;
+    address?: { country?: string | null } | null;
+  } | null;
+  shipping_details?: { address?: { country?: string | null } | null } | null;
+  collected_information?: {
+    shipping_details?: { address?: { country?: string | null } | null } | null;
+  } | null;
   metadata?: Record<string, string> | null;
 }
 
-interface StripeListResponse {
-  data?: StripeSession[];
+interface StripeInvoice {
+  id?: string;
+  amount_paid?: number;
+  currency?: string | null;
+  created?: number;
+  billing_reason?: string | null;
+  customer?: string | {
+    id?: string;
+    address?: { country?: string | null } | null;
+    shipping?: { address?: { country?: string | null } | null } | null;
+  } | null;
+  customer_address?: { country?: string | null } | null;
+  customer_shipping?: { address?: { country?: string | null } | null } | null;
+  subscription?: string | { id?: string } | null;
+  parent?: { type?: string; subscription_details?: { subscription?: string | { id?: string } | null } } | null;
+  metadata?: Record<string, string> | null;
+}
+
+interface StripeListResponse<T> {
+  data?: T[];
   has_more?: boolean;
 }
 
@@ -63,13 +92,16 @@ interface StripeResult {
 
 const GOOGLE_REPORT_URL = "https://analyticsdata.googleapis.com/v1beta";
 const STRIPE_SESSIONS_URL = "https://api.stripe.com/v1/checkout/sessions";
+const STRIPE_INVOICES_URL = "https://api.stripe.com/v1/invoices";
+const STRIPE_ATTRIBUTION_LOOKBACK_DAYS = 365;
 const CACHE_TTL_MS = 60_000;
 const ZERO_DECIMAL_CURRENCIES = new Set([
   "bif", "clp", "djf", "gnf", "jpy", "kmf", "krw", "mga", "pyg", "rwf", "ugx", "vnd", "vuv", "xaf", "xof", "xpf",
 ]);
+const REGION_NAMES = new Intl.DisplayNames(["en"], { type: "region" });
 
-let cached: { at: number; snapshot: AnalyticsSnapshot } | null = null;
-let inFlight: Promise<AnalyticsSnapshot> | null = null;
+const cached = new Map<string, { at: number; snapshot: AnalyticsSnapshot }>();
+const inFlight = new Map<string, Promise<AnalyticsSnapshot>>();
 
 function numberAt(row: GoogleReportRow | undefined, index: number): number {
   const value = Number(row?.metricValues?.[index]?.value ?? 0);
@@ -137,10 +169,49 @@ function stripeDateLabel(timestamp: number): string {
   }).format(new Date(timestamp * 1000));
 }
 
-export function parseStripeSessions(sessions: StripeSession[]): StripeResult {
+function isSubscriptionInvoice(invoice: StripeInvoice): boolean {
+  return invoice.billing_reason?.startsWith("subscription") === true
+    || !!invoice.subscription
+    || invoice.parent?.type === "subscription_details"
+    || !!invoice.parent?.subscription_details?.subscription;
+}
+
+function stripeObjectId(value: string | { id?: string } | null | undefined): string | undefined {
+  return typeof value === "string" ? value : value?.id;
+}
+
+function stripeSessionCountry(session: StripeSession): string {
+  return session.customer_details?.address?.country
+    || session.shipping_details?.address?.country
+    || session.collected_information?.shipping_details?.address?.country
+    || session.metadata?.country
+    || "Unknown";
+}
+
+function countryLabel(country: string): string {
+  const code = country.trim().toUpperCase();
+  return /^[A-Z]{2}$/.test(code) ? REGION_NAMES.of(code) || code : country;
+}
+
+export function parseStripeSessions(
+  sessions: StripeSession[],
+  subscriptionInvoices: StripeInvoice[] = [],
+  attributionSessions: StripeSession[] = sessions,
+): StripeResult {
+  const recurringInvoices = subscriptionInvoices.filter(isSubscriptionInvoice);
   const daily = new Map<string, { checkouts: number; revenue: number }>();
   const revenueBySource = new Map<string, number>();
   const revenueByCountry = new Map<string, number>();
+  const countryBySubscription = new Map<string, string>();
+  const countryByCustomer = new Map<string, string>();
+  for (const session of attributionSessions) {
+    const country = stripeSessionCountry(session);
+    if (country === "Unknown") continue;
+    const subscriptionId = stripeObjectId(session.subscription);
+    const customerId = stripeObjectId(session.customer);
+    if (subscriptionId) countryBySubscription.set(subscriptionId, country);
+    if (customerId) countryByCustomer.set(customerId, country);
+  }
   const checkouts = sessions.flatMap((session): AnalyticsCheckout[] => {
     if (!session.id || !session.created) return [];
     const currency = session.currency?.toLowerCase() || "usd";
@@ -148,13 +219,20 @@ export function parseStripeSessions(sessions: StripeSession[]): StripeResult {
     const date = new Date(session.created * 1000).toISOString().slice(0, 10);
     const current = daily.get(date) ?? { checkouts: 0, revenue: 0 };
     current.checkouts += 1;
-    current.revenue += amount;
+    // Paid subscription invoices are the source of truth for recurring
+    // revenue. Exclude subscription-mode Checkout value when invoice data is
+    // present so the first payment is not counted twice.
+    const checkoutRevenue = session.mode === "subscription" && recurringInvoices.length > 0 ? 0 : amount;
+    current.revenue += checkoutRevenue;
     daily.set(date, current);
 
-    const source = session.metadata?.source || session.metadata?.utm_source || "Direct / None";
-    const country = session.metadata?.country || "Unknown";
-    revenueBySource.set(source, (revenueBySource.get(source) ?? 0) + amount);
-    revenueByCountry.set(country, (revenueByCountry.get(country) ?? 0) + amount);
+    // Stripe does not receive GA attribution automatically. Keep absent
+    // metadata distinct from GA's real "Direct / None" traffic bucket.
+    const source = session.metadata?.source || session.metadata?.utm_source || "Unattributed";
+    const country = stripeSessionCountry(session);
+    revenueBySource.set(source, (revenueBySource.get(source) ?? 0) + checkoutRevenue);
+    const revenueCountry = countryLabel(country);
+    revenueByCountry.set(revenueCountry, (revenueByCountry.get(revenueCountry) ?? 0) + checkoutRevenue);
 
     return [{
       id: session.id,
@@ -168,6 +246,34 @@ export function parseStripeSessions(sessions: StripeSession[]): StripeResult {
       createdAt: stripeDateLabel(session.created),
     }];
   });
+
+  for (const invoice of recurringInvoices) {
+    if (!invoice.id || !invoice.created) continue;
+    const currency = invoice.currency?.toLowerCase() || "usd";
+    const amount = amountInMajorUnits(invoice.amount_paid ?? 0, currency);
+    if (amount <= 0) continue;
+    const date = new Date(invoice.created * 1000).toISOString().slice(0, 10);
+    const current = daily.get(date) ?? { checkouts: 0, revenue: 0 };
+    current.revenue += amount;
+    daily.set(date, current);
+    const source = invoice.metadata?.source || invoice.metadata?.utm_source || "Subscriptions";
+    const expandedCustomer = typeof invoice.customer === "object" ? invoice.customer : null;
+    const subscriptionId = stripeObjectId(
+      invoice.subscription ?? invoice.parent?.subscription_details?.subscription,
+    );
+    const customerId = stripeObjectId(invoice.customer);
+    const country = invoice.customer_address?.country
+      || invoice.customer_shipping?.address?.country
+      || expandedCustomer?.address?.country
+      || expandedCustomer?.shipping?.address?.country
+      || (subscriptionId ? countryBySubscription.get(subscriptionId) : undefined)
+      || (customerId ? countryByCustomer.get(customerId) : undefined)
+      || invoice.metadata?.country
+      || "Unknown";
+    revenueBySource.set(source, (revenueBySource.get(source) ?? 0) + amount);
+    const revenueCountry = countryLabel(country);
+    revenueByCountry.set(revenueCountry, (revenueByCountry.get(revenueCountry) ?? 0) + amount);
+  }
 
   return {
     // Stripe returns Checkout Sessions newest-first. Preserve that API order;
@@ -231,34 +337,56 @@ async function fetchGoogleAnalytics(fetcher: Fetcher, propertyId: string, access
   return parseGoogleAnalyticsReports({ summary, daily, referrers, countries, pages, devices });
 }
 
-async function fetchStripe(fetcher: Fetcher, secretKey: string): Promise<StripeResult> {
-  const sessions: StripeSession[] = [];
+async function fetchStripeList<T>(
+  fetcher: Fetcher,
+  url: string,
+  secretKey: string,
+  params: URLSearchParams,
+): Promise<T[]> {
+  const values: T[] = [];
   let startingAfter: string | undefined;
-  const createdAfter = Math.floor(Date.now() / 1000) - 30 * 86_400;
-
   for (let page = 0; page < 10; page += 1) {
-    const params = new URLSearchParams({
-      limit: "100",
-      status: "complete",
-      "created[gte]": String(createdAfter),
-    });
-    if (startingAfter) params.set("starting_after", startingAfter);
-    const response = await fetcher(`${STRIPE_SESSIONS_URL}?${params}`, {
-      headers: { Authorization: `Basic ${Buffer.from(`${secretKey}:`).toString("base64")}` },
+    const pageParams = new URLSearchParams(params);
+    if (startingAfter) pageParams.set("starting_after", startingAfter);
+    const response = await fetcher(`${url}?${pageParams}`, {
+      headers: { Authorization: `Bearer ${secretKey}` },
     });
     if (!response.ok) {
       const detail = await response.text().catch(() => "");
       throw new Error(`Stripe ${response.status}${detail ? `: ${detail.slice(0, 180)}` : ""}`);
     }
-    const body = await response.json() as StripeListResponse;
-    const pageSessions = body.data ?? [];
-    sessions.push(...pageSessions);
-    if (!body.has_more || pageSessions.length === 0) break;
-    startingAfter = pageSessions.at(-1)?.id;
+    const body = await response.json() as StripeListResponse<T>;
+    const pageValues = body.data ?? [];
+    values.push(...pageValues);
+    if (!body.has_more || pageValues.length === 0) break;
+    const last = pageValues.at(-1) as { id?: string } | undefined;
+    startingAfter = last?.id;
     if (!startingAfter) break;
   }
+  return values;
+}
 
-  return parseStripeSessions(sessions);
+async function fetchStripe(fetcher: Fetcher, secretKey: string): Promise<StripeResult> {
+  const createdAfter = Math.floor(Date.now() / 1000) - 30 * 86_400;
+  // ponytail: one year covers current accounts; persist the Checkout mapping if older renewals become common.
+  const attributionAfter = Math.floor(Date.now() / 1000) - STRIPE_ATTRIBUTION_LOOKBACK_DAYS * 86_400;
+  const invoiceParams = new URLSearchParams({
+    limit: "100",
+    status: "paid",
+    "created[gte]": String(createdAfter),
+  });
+  invoiceParams.append("expand[]", "data.customer");
+  const [attributionSessions, invoices] = await Promise.all([
+    fetchStripeList<StripeSession>(fetcher, STRIPE_SESSIONS_URL, secretKey, new URLSearchParams({
+      limit: "100",
+      status: "complete",
+      "created[gte]": String(attributionAfter),
+    })),
+    fetchStripeList<StripeInvoice>(fetcher, STRIPE_INVOICES_URL, secretKey, invoiceParams),
+  ]);
+  const sessions = attributionSessions.filter((session) => (session.created ?? 0) >= createdAfter);
+
+  return parseStripeSessions(sessions, invoices, attributionSessions);
 }
 
 function emptyDaily(now = new Date()): AnalyticsDailyPoint[] {
@@ -326,7 +454,10 @@ async function fetchSnapshot(fetcher: Fetcher, credentials: AnalyticsCredentials
     totals,
     daily,
     referrers: withAttributedRevenue(google?.referrers ?? [], stripe?.revenueBySource ?? new Map()),
-    countries: withAttributedRevenue(google?.countries ?? [], stripe?.revenueByCountry ?? new Map()),
+    countries: withAttributedRevenue(
+      (google?.countries ?? []).filter((row) => row.label !== "Unknown"),
+      stripe?.revenueByCountry ?? new Map(),
+    ),
     pages: google?.pages ?? [],
     devices: google?.devices ?? [],
     checkouts: stripe?.checkouts ?? [],
@@ -338,24 +469,28 @@ export async function loadAnalyticsSnapshot(options: {
   fetcher?: Fetcher;
   credentials?: AnalyticsCredentials;
   force?: boolean;
+  cacheKey?: string;
 } = {}): Promise<AnalyticsSnapshot> {
   const now = Date.now();
-  if (!options.force && cached && now - cached.at < CACHE_TTL_MS) return cached.snapshot;
-  if (!options.force && inFlight) return inFlight;
+  const cacheKey = options.cacheKey ?? "default";
+  const cachedEntry = cached.get(cacheKey);
+  if (!options.force && cachedEntry && now - cachedEntry.at < CACHE_TTL_MS) return cachedEntry.snapshot;
+  const pending = inFlight.get(cacheKey);
+  if (!options.force && pending) return pending;
   const credentials = options.credentials ?? nativeCredentials();
   const request = fetchSnapshot(options.fetcher ?? fetch, credentials)
     .then((snapshot) => {
-      cached = { at: Date.now(), snapshot };
+      cached.set(cacheKey, { at: Date.now(), snapshot });
       return snapshot;
     })
     .finally(() => {
-      if (inFlight === request) inFlight = null;
+      if (inFlight.get(cacheKey) === request) inFlight.delete(cacheKey);
     });
-  inFlight = request;
+  inFlight.set(cacheKey, request);
   return request;
 }
 
 export function resetAnalyticsSnapshotCache(): void {
-  cached = null;
-  inFlight = null;
+  cached.clear();
+  inFlight.clear();
 }

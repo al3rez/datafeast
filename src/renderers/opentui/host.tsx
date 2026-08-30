@@ -4,7 +4,6 @@ import type { ReactNode } from "react";
 import { resetTerminalInputState } from "../../utils/terminal-input-reset";
 import type { KeyEventLike } from "../../react/input";
 import type { NativeRendererHost, PixelResolution, RendererHost } from "../../ui/host";
-import { colors } from "../../theme/colors";
 import { safeExternalUrl } from "../../utils/external-url";
 import { createTerminalMediaReaper, terminalMediaStateFile } from "./terminal-media";
 import { saveTextFileToDownloads } from "../../utils/save-text-file";
@@ -92,7 +91,8 @@ export async function createOpenTuiHost(): Promise<OpenTuiHost> {
   // crosshair follows the cursor instead of stepping at 10fps.
   const renderer = await createCliRenderer({
     exitOnCtrlC: true,
-    backgroundColor: colors.bg,
+    autoFocus: false,
+    backgroundColor: "transparent",
     enableMouseMovement: true,
   });
   const root = createRoot(renderer);

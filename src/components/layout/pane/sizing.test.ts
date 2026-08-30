@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { resolvePaneBodyFrame, shouldReservePaneFooter } from "./sizing";
+import { resolvePaneBodyFrame, shouldReservePaneFooter, TERMINAL_DOCKED_PANE_HEADER_ROWS } from "./sizing";
 
 describe("pane sizing", () => {
   test("lets native pane chrome lay out footer bars in normal flex flow", () => {
@@ -39,5 +39,16 @@ describe("pane sizing", () => {
       flexGrow: 0,
       flexBasis: undefined,
     });
+  });
+
+  test("reserves the terminal docked-pane header divider row", () => {
+    const bodyFrame = resolvePaneBodyFrame({
+      height: 30,
+      nativePaneChrome: false,
+      reserveFooter: true,
+      headerRows: TERMINAL_DOCKED_PANE_HEADER_ROWS,
+    });
+
+    expect(bodyFrame.height).toBe(27);
   });
 });

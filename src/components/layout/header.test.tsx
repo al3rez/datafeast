@@ -20,12 +20,14 @@ test("opens the current version changelog from the header", async () => {
     <AppContext value={{ state, dispatch: () => {} }}>
       <Header onOpenChangelog={(version) => { openedVersion = version; }} />
     </AppContext>,
-    { width: 100, height: 1 },
+    { width: 100, height: 2 },
   );
 
   await testSetup.renderOnce();
-  const versionX = testSetup.captureCharFrame().indexOf(`v${VERSION}`);
+  const frame = testSetup.captureCharFrame();
+  const versionX = frame.indexOf(`v${VERSION}`);
   expect(versionX).toBeGreaterThanOrEqual(0);
+  expect(frame.split("\n")[1]).toBe("─".repeat(100));
 
   await act(async () => {
     await testSetup!.mockMouse.click(versionX + 1, 0);

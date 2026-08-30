@@ -115,6 +115,29 @@ describe("composite chart renderers", () => {
     expect(Math.max(...greenXs)).toBeLessThan(Math.min(...orangeXs));
   });
 
+  test("keeps the native chart background transparent", () => {
+    const scene = buildCompositeChartScene(
+      [series("traffic", "line", [1, 2, 3], "left", "#ff9900")],
+      [{ id: "main" }],
+      { width: 31, height: 9 },
+    )!;
+    const bitmap = renderCompositePanelBitmap(scene.panels[0]!, {
+      pixelWidth: 61,
+      pixelHeight: 29,
+      colors: {
+        background: "transparent",
+        grid: "#334455",
+        crosshair: "#ffffff",
+        text: "#eeeeee",
+        textDim: "#999999",
+        negative: "#ff0000",
+      },
+    });
+
+    expect(bitmap.pixels[3]).toBe(0);
+    expect(bitmap.pixels.some((value, index) => index % 4 === 3 && value > 0)).toBeTrue();
+  });
+
   test("groups offset annual and quarterly fiscal closes into stable cohort lanes", () => {
     const cases = [
       {

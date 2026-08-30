@@ -1563,7 +1563,7 @@ describe("CompositeChart", () => {
   });
 
   test("restores persisted drawings from pane settings on mount", async () => {
-    const renderWithSettings = async (settings: Record<string, unknown>) => {
+    const renderWithSettings = async (settings: Record<string, unknown>, interactive = true) => {
       const config = createDefaultConfig("/tmp/gloomberb-composite-drawings");
       config.layout.instances.push({
         instanceId: "chart:test",
@@ -1579,6 +1579,7 @@ describe("CompositeChart", () => {
               <CompositeChart
                 width={60}
                 height={12}
+                interactive={interactive}
                 series={[series("price", "main", "left", "USD", [100, 101, 102, 103, 104, 105, 106, 107, 108])]}
                 panels={[{ id: "main" }]}
               />
@@ -1598,8 +1599,7 @@ describe("CompositeChart", () => {
       return pixels;
     };
 
-    const blank = await renderWithSettings({});
-    const restored = await renderWithSettings({
+    const drawingSettings = {
       chartDrawings: [{
         id: "drawing-1",
         panelId: "main",
@@ -1609,9 +1609,13 @@ describe("CompositeChart", () => {
           { time: Date.UTC(2025, 0, 8), value: 107 },
         ],
       }],
-    });
+    };
+    const blank = await renderWithSettings({});
+    const restored = await renderWithSettings(drawingSettings);
+    const suppressed = await renderWithSettings(drawingSettings, false);
 
     expect(restored.equals(blank)).toBe(false);
+    expect(suppressed.equals(blank)).toBe(true);
   });
 
   test("shows useful UTC times for an intraday shared cursor and time axis", async () => {

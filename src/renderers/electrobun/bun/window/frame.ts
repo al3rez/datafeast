@@ -21,6 +21,25 @@ export function defaultMainWindowFrame(platform = process.platform): WindowFrame
   return platform === "win32" ? DEFAULT_WINDOWS_WINDOW_FRAME : DEFAULT_WINDOW_FRAME;
 }
 
+/** Keep the initial frame inside Wayland's logical-pixel work area. */
+export function fitWindowFrameToWorkArea(
+  frame: WindowFrame,
+  workArea: WindowFrame | null | undefined,
+  margin = 32,
+): WindowFrame {
+  if (!workArea || workArea.width <= 0 || workArea.height <= 0) return frame;
+  const availableWidth = Math.max(MAIN_WINDOW_MIN_SIZE.width, workArea.width - margin * 2);
+  const availableHeight = Math.max(MAIN_WINDOW_MIN_SIZE.height, workArea.height - margin * 2);
+  const width = Math.min(frame.width, availableWidth);
+  const height = Math.min(frame.height, availableHeight);
+  return {
+    x: Math.round(workArea.x + (workArea.width - width) / 2),
+    y: Math.round(workArea.y + (workArea.height - height) / 2),
+    width,
+    height,
+  };
+}
+
 export function normalizeWindowFrame(
   frame: Partial<WindowFrame> | null | undefined,
   fallback: WindowFrame = DEFAULT_WINDOW_FRAME,

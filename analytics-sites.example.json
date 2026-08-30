@@ -1,0 +1,21 @@
+{
+  "activeSiteId": "admix-software",
+  "sites": [
+    {
+      "id": "admix-software",
+      "name": "admix.software",
+      "domain": "admix.software",
+      "googlePropertyId": "123456789",
+      "googleServiceAccountFile": "~/.signalbase/google-analytics-service-account.json",
+      "stripeSecretKeyFile": "~/.signalbase/secrets/admix-stripe-key"
+    },
+    {
+      "id": "second-site",
+      "name": "second.example",
+      "domain": "second.example",
+      "googlePropertyId": "987654321",
+      "googleServiceAccountFile": "~/.signalbase/google-analytics-service-account.json",
+      "stripeSecretKeyEnv": "SECOND_SITE_STRIPE_SECRET_KEY"
+    }
+  ]
+}

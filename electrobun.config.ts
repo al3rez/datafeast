@@ -13,6 +13,7 @@ const config: ElectrobunConfig = {
     urlSchemes: ["signalbase"],
   },
   build: {
+    mainProcess: "bun",
     bun: {
       entrypoint: "src/renderers/electrobun/bun/index.ts",
       sourcemap: "external",

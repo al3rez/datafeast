@@ -1,4 +1,4 @@
-import { Box } from "../../../../ui";
+import { Box, Text } from "../../../../ui";
 import type {
   DockDividerLayout,
   DockLeafLayout,
@@ -14,7 +14,7 @@ import { PaneContent } from "../../pane/content";
 import { PaneWrapper } from "../../pane";
 import type { PaneHeaderQuickSetting } from "../../pane/header";
 import { hasPaneFooterContent, PaneFooterProvider } from "../../pane/footer";
-import { resolvePaneBodyFrame, shouldReservePaneFooter } from "../../pane/sizing";
+import { resolvePaneBodyFrame, shouldReservePaneFooter, TERMINAL_DOCKED_PANE_HEADER_ROWS } from "../../pane/sizing";
 import type { DividerPreviewState } from "../native/window-state";
 
 type ShellMouseHandler = (event: any) => void;
@@ -103,6 +103,7 @@ export function ShellPaneLayers({
         const focused = focusedPaneId === leaf.instanceId && (!overlayOpen || menuPaneId === leaf.instanceId);
         const windowModeSelected = windowModePaneId === leaf.instanceId;
         const showActions = focused || hoveredPaneId === leaf.instanceId || menuPaneId === leaf.instanceId;
+        const hideTerminalDockedHeader = !nativePaneChrome && pane.def.hideTerminalDockedHeader === true;
         return (
           <Box
             key={`dock:${leaf.instanceId}`}
@@ -123,6 +124,7 @@ export function ShellPaneLayers({
                   nativePaneChrome,
                   footerVisible: renderFooter,
                   reserveFooter,
+                  headerRows: nativePaneChrome ? 1 : hideTerminalDockedHeader ? 0 : TERMINAL_DOCKED_PANE_HEADER_ROWS,
                 });
                 return (
                   <PaneWrapper
@@ -131,6 +133,7 @@ export function ShellPaneLayers({
                     focused={focused}
                     width={rect.width}
                     height={rect.height}
+                    hideTerminalDockedHeader={hideTerminalDockedHeader}
                     showActions={showActions}
                     quickSettings={getPaneQuickSettings(leaf.instanceId)}
                     windowModeSelected={windowModeSelected}
@@ -239,7 +242,7 @@ export function ShellPaneLayers({
             width={rect.width}
             height={rect.height}
             zIndex={active ? 2 : 1}
-            backgroundColor={active ? colors.borderFocused : colors.border}
+            backgroundColor={nativePaneChrome ? active ? colors.borderFocused : colors.border : "transparent"}
             {...(nativePaneChrome ? {
               "data-gloom-role": "dock-divider",
               "data-axis": divider.axis,
@@ -249,7 +252,16 @@ export function ShellPaneLayers({
             onMouseDown={nativePaneChrome ? (event: any) => startNativeDividerDrag(divider, event) : undefined}
             onMouseDrag={nativePaneChrome ? handleNativeDrag : undefined}
             onMouseDragEnd={nativePaneChrome ? handleNativeDrag : undefined}
-          />
+          >
+            {!nativePaneChrome && divider.axis === "vertical" ? (
+              <Text fg={active ? colors.borderFocused : colors.border}>{"─".repeat(rect.width)}</Text>
+            ) : null}
+            {!nativePaneChrome && divider.axis === "horizontal"
+              ? Array.from({ length: rect.height }, (_, row) => (
+                <Text key={row} fg={active ? colors.borderFocused : colors.border}>│</Text>
+              ))
+              : null}
+          </Box>
         );
       })}
     </>

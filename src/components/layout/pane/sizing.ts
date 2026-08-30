@@ -1,6 +1,7 @@
 
 const PANE_HEADER_ROWS = 1;
 const PANE_FOOTER_ROWS = 1;
+export const TERMINAL_DOCKED_PANE_HEADER_ROWS = 2;
 
 const NATIVE_PANE_BODY_LAYOUT_PROPS = {
   flexGrow: 1,

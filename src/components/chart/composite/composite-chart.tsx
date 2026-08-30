@@ -2061,7 +2061,7 @@ export function CompositeChart({
           }}
         />
       ) : null}
-      {paneInstanceId ? (
+      {interactive && paneInstanceId ? (
         <ChartDrawingStore
           paneInstanceId={paneInstanceId}
           drawings={drawings}

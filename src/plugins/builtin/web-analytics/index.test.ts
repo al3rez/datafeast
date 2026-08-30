@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { createDefaultConfig } from "../../../types/config";
-import { createWebAnalyticsLaunchRequest, WEB_ANALYTICS_LAYOUT } from ".";
+import { createWebAnalyticsLaunchRequest, WEB_ANALYTICS_LAYOUT, webAnalyticsPlugin } from ".";
+import { checkoutColumns } from "./panes";
 
 describe("Signalbase analytics launch", () => {
   test("replaces the startup workspace with the complete analytics app layout", () => {
@@ -14,7 +15,7 @@ describe("Signalbase analytics launch", () => {
       "web-analytics-breakdowns",
       "web-analytics-checkouts",
     ]);
-    expect(config.layouts.at(-1)?.name).toBe("Analytics");
+    expect(config.layouts.map((layout) => layout.name)).toEqual(["Analytics"]);
 
     const session = request.applySessionSnapshot?.(config, null, undefined);
     expect(session?.focusedPaneId).toBe("web-analytics-overview:main");
@@ -23,5 +24,17 @@ describe("Signalbase analytics launch", () => {
       "web-analytics-breakdowns:main",
       "web-analytics-checkouts:main",
     ]);
+    expect(session?.statusBarVisible).toBeFalse();
+  });
+
+  test("exposes the backend snapshot capability without exposing credentials", () => {
+    expect(webAnalyticsPlugin.capabilities?.map((capability) => capability.id)).toContain("web-analytics.snapshot");
+    expect(webAnalyticsPlugin.capabilities?.[0]?.operations.load?.rendererSafe).toBe(true);
+  });
+
+  test("keeps the useful checkout columns inside a narrow terminal pane", () => {
+    const columns = checkoutColumns(58);
+    expect(columns.map((column) => column.id)).toEqual(["customer", "source", "country", "amount"]);
+    expect(columns.reduce((width, column) => width + column.width, columns.length + 2)).toBeLessThanOrEqual(58);
   });
 });

@@ -49,7 +49,7 @@ describe("Stripe Checkout normalization", () => {
         currency: "usd",
         created: Date.parse("2026-08-30T09:00:00Z") / 1000,
         payment_status: "paid",
-        customer_details: { name: "Maya Chen", email: "maya@example.com" },
+        customer_details: { name: "Maya Chen", email: "maya@example.com", address: { country: "SG" } },
         metadata: { source: "Product Hunt", country: "US" },
       },
       {
@@ -65,7 +65,71 @@ describe("Stripe Checkout normalization", () => {
     expect(result.daily.get("2026-08-30")).toEqual({ checkouts: 2, revenue: 1499 });
     expect(result.revenueBySource.get("Product Hunt")).toBe(299);
     expect(result.revenueBySource.get("Google")).toBe(1200);
+    expect(result.revenueByCountry.get("Singapore")).toBe(299);
     expect(result.checkouts[0]).toMatchObject({ id: "cs_one", customer: "Maya Chen", amount: 299 });
+  });
+
+  test("adds paid subscription invoices without double-counting subscription Checkout", () => {
+    const created = Date.parse("2026-08-30T09:00:00Z") / 1000;
+    const result = parseStripeSessions([
+      {
+        id: "cs_subscription",
+        amount_total: 2900,
+        currency: "usd",
+        created,
+        mode: "subscription",
+        payment_status: "paid",
+      },
+      {
+        id: "cs_payment",
+        amount_total: 1000,
+        currency: "usd",
+        created,
+        mode: "payment",
+        payment_status: "paid",
+      },
+    ], [
+      {
+        id: "in_initial",
+        amount_paid: 2900,
+        currency: "usd",
+        created,
+        billing_reason: "subscription_create",
+      },
+      {
+        id: "in_renewal",
+        amount_paid: 2900,
+        currency: "usd",
+        created,
+        billing_reason: "subscription_cycle",
+      },
+    ]);
+
+    expect(result.daily.get("2026-08-30")).toEqual({ checkouts: 2, revenue: 68 });
+    expect(result.revenueBySource.get("Subscriptions")).toBe(58);
+    expect(result.checkouts[0]?.source).toBe("Unattributed");
+  });
+
+  test("attributes recurring invoice revenue through the original Checkout country", () => {
+    const created = Date.parse("2026-08-30T09:00:00Z") / 1000;
+    const result = parseStripeSessions([], [{
+      id: "in_renewal",
+      amount_paid: 2900,
+      currency: "usd",
+      created,
+      billing_reason: "subscription_cycle",
+      subscription: "sub_one",
+      customer: "cus_one",
+    }], [{
+      id: "cs_original",
+      created: created - 90 * 86_400,
+      subscription: "sub_one",
+      customer: "cus_one",
+      customer_details: { address: { country: "US" } },
+    }]);
+
+    expect(result.revenueByCountry.get("United States")).toBe(29);
+    expect(result.revenueByCountry.has("Unknown")).toBeFalse();
   });
 });
 

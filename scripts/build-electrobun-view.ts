@@ -7,6 +7,17 @@ import {
 
 const outdir = join(process.cwd(), "dist", "electrobun-view");
 
+if (process.versions.cottontail) {
+  const bun = process.env.npm_execpath;
+  if (!bun) throw new Error("Electrobun's preBuild hook requires this script to be launched through bun run.");
+  const build = Bun.spawnSync({
+    cmd: [bun, join(process.cwd(), "scripts", "build-electrobun-view.ts")],
+    stdout: "inherit",
+    stderr: "inherit",
+  });
+  process.exit(build.exitCode ?? 1);
+}
+
 await rm(outdir, { recursive: true, force: true });
 await mkdir(outdir, { recursive: true });
 

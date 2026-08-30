@@ -257,7 +257,7 @@ export function PaneFooterBar({
     );
   }
 
-  if (focused || showBorder) {
+  if (showBorder) {
     const contentWidth = Math.max(0, Math.floor(width) - 1 - reservedRight - (reservedRight > 0 ? 0 : 1));
     return (
       <Box height={1} width={width} flexDirection="row" data-gloom-role="pane-footer" data-focused={focused ? "true" : "false"} data-empty={empty ? "true" : "false"}>
@@ -265,7 +265,7 @@ export function PaneFooterBar({
         <Box width={contentWidth} height={1} overflow="hidden">
           {empty
             ? <Text fg={borderColor} selectable={false}>{"─".repeat(contentWidth)}</Text>
-            : <FooterContent footer={resolvedFooter} focused={focused} width={contentWidth} />}
+            : <FooterContent footer={resolvedFooter} focused={focused} width={contentWidth} showBackground={false} />}
         </Box>
         {reservedRight === 0 && <Text fg={borderColor} selectable={false}>┘</Text>}
       </Box>
@@ -274,9 +274,9 @@ export function PaneFooterBar({
 
   const contentWidth = Math.max(0, Math.floor(width) - reservedRight);
   return (
-    <Box height={1} width={width} flexDirection="row" data-gloom-role="pane-footer" data-focused="false" data-empty={empty ? "true" : "false"}>
+    <Box height={1} width={width} flexDirection="row" data-gloom-role="pane-footer" data-focused={focused ? "true" : "false"} data-empty={empty ? "true" : "false"}>
       <Box width={contentWidth} height={1} overflow="hidden">
-        <FooterContent footer={resolvedFooter} focused={false} width={contentWidth} />
+        <FooterContent footer={resolvedFooter} focused={focused} width={contentWidth} showBackground={false} />
       </Box>
     </Box>
   );

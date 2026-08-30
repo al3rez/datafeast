@@ -15,10 +15,11 @@ import { openTuiUiHost } from "./ui-host";
 import { OpenTuiDialogHostProvider } from "./dialog-host";
 import { openTuiToastHost } from "./toast-host";
 import { ToastHostProvider } from "../../ui/toast";
-import { colors } from "../../theme/colors";
+import { applyTheme, colors } from "../../theme/colors";
+import { registerRuntimeTheme } from "../../theme/themes";
 import { startMainThreadMonitor } from "../../utils/main-thread-monitor";
 import { measurePerfAsync } from "../../utils/perf-marks";
-import type { CliLaunchRequest } from "../../types/plugin";
+import type { CliLaunchRequest, GloomPlugin } from "../../types/plugin";
 import type { RemoteControlAdapter } from "../../remote/app-host";
 import { startRemoteControlServer, type RemoteControlServer } from "../../remote/server";
 import { createPiAiHost } from "../../plugins/builtin/ai/pi";
@@ -26,6 +27,7 @@ import {
   installAiRunHost,
 } from "../../plugins/builtin/ai/runner";
 import { createAppServices } from "../../core/app-services";
+import { createTerminalTheme, TERMINAL_THEME_ID } from "./terminal-theme";
 
 const AI_STARTUP_READINESS_TIMEOUT_MS = 5_000;
 
@@ -34,6 +36,7 @@ export interface StartOpenTuiAppOptions {
   cliArgs?: string[];
   skipCliDispatch?: boolean;
   cliLaunchRequest?: CliLaunchRequest | null;
+  plugins?: readonly GloomPlugin[];
 }
 
 export async function startOpenTuiApp(options: StartOpenTuiAppOptions = {}): Promise<void> {
@@ -128,6 +131,23 @@ export async function startOpenTuiApp(options: StartOpenTuiAppOptions = {}): Pro
       });
     }
     host = await measurePerfAsync("startup.opentui.create-host", () => createOpenTuiHost());
+    if (config.theme === TERMINAL_THEME_ID) {
+      try {
+        const detectedColors = await measurePerfAsync(
+          "startup.opentui.detect-terminal-theme",
+          () => host!.renderer.getPalette({ size: 16, timeout: 800 }),
+        );
+        const terminalTheme = createTerminalTheme(detectedColors);
+        if (terminalTheme) {
+          registerRuntimeTheme(TERMINAL_THEME_ID, terminalTheme);
+          applyTheme(TERMINAL_THEME_ID);
+        }
+      } catch (error) {
+        appLog.warn("Terminal palette detection failed; using the fallback terminal theme", {
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }
     host.renderer.once("destroy", finishProcessExit);
 
     host.render(
@@ -144,7 +164,7 @@ export async function startOpenTuiApp(options: StartOpenTuiAppOptions = {}): Pro
                 config={config}
                 servicesFactory={createAppServices}
                 externalPlugins={externalPlugins}
-                plugins={getLoadablePlugins(externalPlugins)}
+                plugins={options.plugins ?? getLoadablePlugins(externalPlugins)}
                 cliLaunchRequest={cliLaunchRequest}
                 remoteControlAdapter={remoteControlAdapter}
               />

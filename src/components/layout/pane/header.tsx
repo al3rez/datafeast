@@ -3,6 +3,7 @@ import { useCallback, useRef, type ReactNode } from "react";
 import { blendHex, colors, floatingPaneTitleBg, paneTitleBg, paneTitleText } from "../../../theme/colors";
 import { displayWidth, truncateToDisplayWidth } from "../../../utils/format";
 import { capturePointerDrag } from "../../../ui/pointer-drag";
+import { TERMINAL_DOCKED_PANE_HEADER_ROWS } from "./sizing";
 
 const PANE_HEADER_HEIGHT = 1;
 const PANE_HEADER_GRIP = ":: ";
@@ -131,7 +132,9 @@ export function PaneHeader({
   const nativeRenderer = useNativeRenderer();
   const terminalHeaderRef = useRef<unknown>(null);
   const visuallyFocused = focused || windowModeSelected;
-  const backgroundColor = floating ? floatingPaneTitleBg(visuallyFocused) : paneTitleBg(visuallyFocused);
+  const backgroundColor = nativePaneChrome
+    ? floating ? floatingPaneTitleBg(visuallyFocused) : paneTitleBg(visuallyFocused)
+    : "transparent";
   const actionText = showActions ? PANE_HEADER_ACTION : "     ";
   const closeText = floating ? PANE_HEADER_CLOSE : "";
   const terminalQuickSettingsWidth = quickSettings.reduce((total) => total + displayWidth(" ⚡ "), 0);
@@ -237,7 +240,7 @@ export function PaneHeader({
     );
   }
 
-  if (visuallyFocused || floating) {
+  if (floating) {
     // Build: ┌─:: Title ─────────── ... x─┐
     // Reserve 2 for corners, 1 for ─ after ┌, 1 for ─ before ┐
     const borderColor = visuallyFocused ? colors.borderFocused : colors.border;
@@ -297,42 +300,41 @@ export function PaneHeader({
 
   return (
     <Box
-      ref={terminalHeaderRef}
-      height={PANE_HEADER_HEIGHT}
+      height={TERMINAL_DOCKED_PANE_HEADER_ROWS}
       width={width}
       backgroundColor={backgroundColor}
-      flexDirection="row"
-      onMouseDown={handleTerminalHeaderMouseDown}
-      onMouseMove={onHeaderMouseMove}
-      onMouseDrag={onHeaderMouseDrag}
-      onMouseDragEnd={onHeaderMouseDragEnd}
+      flexDirection="column"
     >
-      <Text fg={textColor} selectable={false}>
-        {`${PANE_HEADER_GRIP}${clippedTitle}${padding}`}
-      </Text>
-      {quickSettings.map((setting) => (
+      <Box
+        ref={terminalHeaderRef}
+        height={PANE_HEADER_HEIGHT}
+        width={width}
+        flexDirection="row"
+        onMouseDown={handleTerminalHeaderMouseDown}
+        onMouseMove={onHeaderMouseMove}
+        onMouseDrag={onHeaderMouseDrag}
+        onMouseDragEnd={onHeaderMouseDragEnd}
+      >
+        <Text fg={textColor} selectable={false}>
+          {`${PANE_HEADER_GRIP}${clippedTitle}${padding}`}
+        </Text>
+        {quickSettings.map((setting) => (
+          <TerminalPaneButton
+            key={setting.key}
+            text=" ⚡ "
+            fg={setting.active ? colors.warning : colors.textDim}
+            role="pane-quick-setting"
+            onMouseDown={setting.onMouseDown}
+          />
+        ))}
         <TerminalPaneButton
-          key={setting.key}
-          text=" ⚡ "
-          fg={setting.active ? colors.warning : colors.textDim}
-          role="pane-quick-setting"
-          onMouseDown={setting.onMouseDown}
-        />
-      ))}
-      <TerminalPaneButton
-        text={actionText}
-        fg={textColor}
-        role="pane-action"
-        onMouseDown={onActionMouseDown}
-      />
-      {floating && (
-        <TerminalPaneButton
-          text={closeText}
+          text={actionText}
           fg={textColor}
-          role="pane-close"
-          onMouseDown={onCloseMouseDown}
+          role="pane-action"
+          onMouseDown={onActionMouseDown}
         />
-      )}
+      </Box>
+      <Text fg={colors.border} selectable={false}>{"─".repeat(Math.max(0, width))}</Text>
     </Box>
   );
 }

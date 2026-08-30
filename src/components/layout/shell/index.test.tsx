@@ -187,7 +187,7 @@ function findUpdateLayout(actions: ShellTestAction[]) {
 describe("Shell", () => {
   test("uses the desktop titlebar overlay height for shell chrome math", () => {
     expect(resolveAppHeaderHeightCells({ titleBarOverlay: true, cellHeightPx: 18 })).toBe(28 / 18);
-    expect(resolveAppHeaderHeightCells({ titleBarOverlay: false, cellHeightPx: 18 })).toBe(1);
+    expect(resolveAppHeaderHeightCells({ titleBarOverlay: false, cellHeightPx: 18 })).toBe(2);
   });
 
   test("keeps command bar native occlusion scoped to the panel", () => {
@@ -209,7 +209,7 @@ describe("Shell", () => {
       {
         id: "command-bar:panel",
         paneId: null,
-        rect: { x: 24, y: 9, width: 72, height: 14 },
+        rect: { x: 24, y: 10, width: 72, height: 14 },
         zIndex: Number.MAX_SAFE_INTEGER,
       },
     ]);
@@ -247,7 +247,7 @@ describe("Shell", () => {
     const actionCol = testSetup.captureCharFrame().split("\n")[0]?.indexOf("...");
     expect(actionCol).toBeGreaterThanOrEqual(0);
     await act(async () => {
-      await testSetup!.mockMouse.click(actionCol! + 1, 1);
+      await testSetup!.mockMouse.click(actionCol! + 1, 2);
     });
     await testSetup.renderOnce();
 
@@ -298,7 +298,7 @@ describe("Shell", () => {
     const floatingActionCol = testSetup.captureCharFrame().split("\n")[0]?.indexOf("...");
     expect(floatingActionCol).toBeGreaterThanOrEqual(0);
     await act(async () => {
-      await testSetup!.mockMouse.click(floatingActionCol! + 1, 1);
+      await testSetup!.mockMouse.click(floatingActionCol! + 1, 2);
     });
     await testSetup.renderOnce();
 
@@ -339,7 +339,7 @@ describe("Shell", () => {
     const highZActionCol = testSetup.captureCharFrame().split("\n")[0]?.indexOf("...");
     expect(highZActionCol).toBeGreaterThanOrEqual(0);
     await act(async () => {
-      await testSetup!.mockMouse.click(highZActionCol! + 1, 1);
+      await testSetup!.mockMouse.click(highZActionCol! + 1, 2);
     });
     await testSetup.renderOnce();
 
@@ -483,9 +483,9 @@ describe("Shell", () => {
     );
 
     await act(async () => {
-      await testSetup!.mockMouse.pressDown(10, 3);
+      await testSetup!.mockMouse.pressDown(10, 4);
       await testSetup!.renderOnce();
-      await testSetup!.mockMouse.moveTo(16, 6);
+      await testSetup!.mockMouse.moveTo(16, 7);
       await testSetup!.renderOnce();
       await testSetup!.renderOnce();
     });
@@ -496,7 +496,7 @@ describe("Shell", () => {
     expect(rows[5]?.indexOf(":: Main Portfolio")).toBeGreaterThanOrEqual(14);
 
     await act(async () => {
-      await testSetup!.mockMouse.release(16, 6);
+      await testSetup!.mockMouse.release(16, 7);
       await testSetup!.renderOnce();
     });
   });

@@ -81,7 +81,7 @@ export function FloatingPaneWrapper({
   children,
 }: FloatingPaneWrapperProps) {
   const { nativePaneChrome } = useUiCapabilities();
-  const bg = floatingPaneBg(focused);
+  const bg = nativePaneChrome ? floatingPaneBg(focused) : "transparent";
   const showFooter = hasPaneFooterContent(footer);
   const reserveFooter = shouldReservePaneFooter(nativePaneChrome, showFooter);
   const renderFooter = reserveFooter || showFooter;
@@ -137,7 +137,7 @@ export function FloatingPaneWrapper({
           focused={focused}
           width={width}
           reserveRight={2}
-          showBorder={!nativePaneChrome && !focused}
+          showBorder={!nativePaneChrome}
         />
       )}
 

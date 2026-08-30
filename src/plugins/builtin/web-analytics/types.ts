@@ -54,3 +54,36 @@ export interface AnalyticsCredentials {
   googleAccessToken?: string;
   stripeSecretKey?: string;
 }
+
+export interface AnalyticsSiteProfile {
+  id: string;
+  name: string;
+  domain: string;
+  googlePropertyId?: string;
+  googleAccessToken?: string;
+  googleAccessTokenEnv?: string;
+  googleServiceAccountFile?: string;
+  stripeSecretKey?: string;
+  stripeSecretKeyEnv?: string;
+  stripeSecretKeyFile?: string;
+}
+
+export interface AnalyticsSiteSummary {
+  id: string;
+  name: string;
+  domain: string;
+  googleConfigured: boolean;
+  stripeConfigured: boolean;
+}
+
+export interface AnalyticsSitesConfig {
+  activeSiteId?: string;
+  sites: AnalyticsSiteProfile[];
+}
+
+export interface AnalyticsSiteSnapshot {
+  activeSiteId: string;
+  sites: AnalyticsSiteSummary[];
+  snapshot: AnalyticsSnapshot;
+  cached: boolean;
+}

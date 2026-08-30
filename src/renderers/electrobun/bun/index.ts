@@ -1,4 +1,4 @@
-import Electrobun, { ApplicationMenu, BrowserView, BrowserWindow, Utils } from "electrobun/bun";
+import Electrobun, { ApplicationMenu, BrowserView, BrowserWindow, Screen, Utils } from "electrobun/bun";
 import {
   APP_SESSION_ID,
   APP_SESSION_SCHEMA_VERSION,
@@ -33,6 +33,7 @@ import { DesktopCapabilityBridge } from "./desktop/capability-bridge";
 import {
   MAIN_WINDOW_MIN_SIZE,
   defaultMainWindowFrame,
+  fitWindowFrameToWorkArea,
   normalizeWindowFrameWithMinimum,
 } from "./window/frame";
 import { MAIN_WINDOW_RPC_KEY } from "./window/focus";
@@ -609,9 +610,10 @@ ApplicationMenu.on("application-menu-clicked", (event: unknown) => {
 installApplicationMenu();
 
 const mainRpc = createWindowRpc(MAIN_WINDOW_RPC_KEY);
+const defaultFrame = defaultMainWindowFrame();
 const initialMainWindowFrame = normalizeWindowFrameWithMinimum(
-  defaultMainWindowFrame(),
-  defaultMainWindowFrame(),
+  fitWindowFrameToWorkArea(defaultFrame, Screen.getPrimaryDisplay().workArea),
+  defaultFrame,
   MAIN_WINDOW_MIN_SIZE,
 );
 

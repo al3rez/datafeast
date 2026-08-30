@@ -1,5 +1,6 @@
 import { Box, SpinnerMark, Text, TextAttributes, useRendererHost, useUiCapabilities } from "../../ui";
 import { useCallback, useEffect, type ReactNode } from "react";
+import { useViewport } from "../../react/input";
 import { blendHex } from "../../theme/colors";
 import { useThemeColors } from "../../theme/theme-context";
 import { useAppDispatch, useAppSelector } from "../../state/app/context";
@@ -13,6 +14,7 @@ import { t, tf } from "../../i18n";
 import { VERSION } from "../../version";
 import { getTitlebarLeadingInset } from "./titlebar-overlay";
 import { WindowControls, WINDOWS_CONTROL_GROUP_WIDTH_PX } from "./window-controls";
+import { PluginSlot } from "../../react/plugins/plugin-slot";
 
 const UPDATE_NOTICE_DURATION_MS = 5_000;
 
@@ -154,6 +156,7 @@ export function Header({
 }) {
   const colors = useThemeColors();
   const rendererHost = useRendererHost();
+  const { width } = useViewport();
   const { titleBarOverlay, nativeWindowChrome = titleBarOverlay, windowControls } = useUiCapabilities();
   const showWindowControls = nativeWindowChrome && windowControls === "windows";
   const titlebarLeadingInset = titleBarOverlay && nativeWindowChrome ? getTitlebarLeadingInset() : 0;
@@ -193,7 +196,7 @@ export function Header({
       >
         <Box paddingLeft={titlebarLeadingInset} flexDirection="row" alignItems="center" gap={1}>
           <Text attributes={TextAttributes.BOLD} fg={colors.headerText}>
-            Signalbase
+            Datafeast │
           </Text>
           <DesktopHeaderPill
             backgroundColor={blendHex(colors.header, colors.headerText, 0.1)}
@@ -236,9 +239,6 @@ export function Header({
             <Text fg={blendHex(colors.headerText, colors.header, 0.38)} style={{ marginLeft: 6, fontSize: 10 }}>?</Text>
           </Box>
         ) : null}
-        <Box paddingRight={1}>
-          <Text fg={colors.headerText}>GA4 + STRIPE</Text>
-        </Box>
         {showWindowControls ? <Box flexShrink={0} width={`${WINDOWS_CONTROL_GROUP_WIDTH_PX}px`} /> : null}
         {showWindowControls ? <WindowControls /> : null}
       </Box>
@@ -247,15 +247,22 @@ export function Header({
 
   return (
     <Box
-      flexDirection="row"
-      height={1}
-      backgroundColor={colors.header}
+      flexDirection="column"
+      height={2}
+      backgroundColor="transparent"
       data-gloom-role="app-header"
       data-titlebar-overlay={titleBarOverlay ? "true" : undefined}
       onMouseDown={startWindowDrag}
     >
-      <Box paddingLeft={titleBarOverlay ? titlebarLeadingInset : 1} flexDirection="row">
-        <Text attributes={TextAttributes.BOLD} fg={colors.headerText}>Signalbase </Text>
+      <Box flexDirection="row" height={1}>
+        <Box paddingLeft={titleBarOverlay ? titlebarLeadingInset : 1} flexDirection="row">
+          <Text attributes={TextAttributes.BOLD} fg={colors.headerText}>Datafeast │</Text>
+          <PluginSlot name="header:navigation" />
+        </Box>
+        <Box flexGrow={1} paddingLeft={2}>
+          <UpdateStatus />
+        </Box>
+        <PluginSlot name="header:actions" />
         <Box
           data-gloom-interactive={onOpenChangelog ? "true" : undefined}
           role={onOpenChangelog ? "button" : undefined}
@@ -270,14 +277,11 @@ export function Header({
         >
           <Text attributes={TextAttributes.BOLD} fg={colors.headerText}>v{VERSION}</Text>
         </Box>
+        {showWindowControls ? <WindowControls /> : null}
       </Box>
-      <Box flexGrow={1} paddingLeft={2}>
-        <UpdateStatus />
-      </Box>
-      <Box paddingRight={1}>
-        <Text fg={colors.headerText}>GA4 + STRIPE</Text>
-      </Box>
-      {showWindowControls ? <WindowControls /> : null}
+      <Text fg={colors.border} selectable={false} data-gloom-role="app-header-divider">
+        {"─".repeat(Math.max(0, width))}
+      </Text>
     </Box>
   );
 }

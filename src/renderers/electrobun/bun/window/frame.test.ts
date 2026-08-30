@@ -5,6 +5,7 @@ import {
   MAIN_WINDOW_MIN_SIZE,
   constrainWindowFrame,
   defaultMainWindowFrame,
+  fitWindowFrameToWorkArea,
   normalizeWindowFrameWithMinimum,
 } from "./frame";
 
@@ -43,5 +44,12 @@ describe("electrobun window frames", () => {
   test("uses a compact default main window frame on Windows", () => {
     expect(defaultMainWindowFrame("win32")).toEqual(DEFAULT_WINDOWS_WINDOW_FRAME);
     expect(defaultMainWindowFrame("darwin")).toEqual(DEFAULT_WINDOW_FRAME);
+  });
+
+  test("fits the initial desktop frame inside a scaled Wayland work area", () => {
+    expect(fitWindowFrameToWorkArea(
+      DEFAULT_WINDOW_FRAME,
+      { x: 0, y: 26, width: 1536, height: 838 },
+    )).toEqual({ x: 48, y: 58, width: 1440, height: 774 });
   });
 });

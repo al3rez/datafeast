@@ -115,17 +115,9 @@ export function ShellWindowModeOverlays({
       {highlightedPaneId && !nativePaneChrome && highlightedRect && highlightedRect.height >= 2 && (!overlayOpen || menuOpen) && (() => {
         const selectedInWindowMode = !!windowMode;
         const borderColor = selectedInWindowMode ? colors.borderFocused : colors.border;
-        const bodyTop = highlightedRect.y + 1;
-        const bodyHeight = selectedInWindowMode ? highlightedRect.height - 1 : highlightedRect.height - 2;
         const bottomWidth = Math.max(0, highlightedRect.width - 2);
         return (
           <>
-            {bodyHeight > 0 && (
-              <Box key={`focus-l:${highlightedPaneId}`} position="absolute" left={highlightedRect.x} top={bodyTop} width={1} height={bodyHeight} zIndex={highlightedZIndex} backgroundColor={borderColor} />
-            )}
-            {bodyHeight > 0 && (
-              <Box key={`focus-r:${highlightedPaneId}`} position="absolute" left={highlightedRect.x + highlightedRect.width - 1} top={bodyTop} width={1} height={bodyHeight} zIndex={highlightedZIndex} backgroundColor={borderColor} />
-            )}
             {selectedInWindowMode && bottomWidth > 0 && (
               <Box key={`focus-b:${highlightedPaneId}`} position="absolute" left={highlightedRect.x + 1} top={highlightedRect.y + highlightedRect.height - 1} width={bottomWidth} height={1} zIndex={highlightedZIndex} backgroundColor={borderColor}>
                 <Text fg={borderColor} selectable={false}>{"─".repeat(bottomWidth)}</Text>

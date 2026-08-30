@@ -295,10 +295,11 @@ export function renderCompositePanelBitmap(
   const width = Math.max(1, Math.floor(options.pixelWidth));
   const height = Math.max(1, Math.floor(options.pixelHeight));
   const data = new Uint8Array(width * height * 4);
-  const background = parseHex(options.colors.background);
   const grid = parseHex(options.colors.grid);
   const negative = parseHex(options.colors.negative);
-  fillOpaque(data, background);
+  if (options.colors.background !== "transparent") {
+    fillOpaque(data, parseHex(options.colors.background));
+  }
 
   for (let index = 1; index <= 3; index += 1) {
     const y = (height - 1) * (index / 4);

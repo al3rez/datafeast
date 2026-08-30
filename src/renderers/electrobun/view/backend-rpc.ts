@@ -145,18 +145,7 @@ const rpc = Electroview.defineRPC<ElectrobunDesktopRpcSchema>({
   },
 });
 
-const electroview = new Electroview({ rpc });
-
-async function waitForBridgeReady(): Promise<void> {
-  const start = Date.now();
-  while (Date.now() - start < 5_000) {
-    if (electroview.bunSocket?.readyState === WebSocket.OPEN) {
-      return;
-    }
-    await new Promise((resolve) => setTimeout(resolve, 25));
-  }
-  throw new Error("Electrobun RPC socket did not open in time.");
-}
+new Electroview({ rpc });
 
 export function backendRequest<T = unknown>(
   method: "capability.invoke",
@@ -170,7 +159,6 @@ export async function backendRequest(
   method: DesktopBackendRequestMethod,
   payload: unknown = null,
 ): Promise<unknown> {
-  await waitForBridgeReady();
   const result = await rpc.request["backend.request"]({
     method,
     payload: encodeRpcValue(payload),

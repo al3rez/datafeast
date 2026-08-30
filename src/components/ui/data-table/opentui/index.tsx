@@ -314,7 +314,7 @@ export function OpenTuiDataTable<T, C extends DataTableColumn = DataTableColumn>
       flexGrow={1}
       flexBasis={0}
       width="100%"
-      backgroundColor={colors.bg}
+      backgroundColor="transparent"
       overflow="hidden"
     >
       <ScrollBox
@@ -322,7 +322,7 @@ export function OpenTuiDataTable<T, C extends DataTableColumn = DataTableColumn>
         ref={headerScrollRef}
         width="100%"
         height={1}
-        backgroundColor={colors.panel}
+        backgroundColor="transparent"
         scrollX={showHorizontalScrollbar}
         focusable={false}
         onSizeChange={measureContentWidth}
@@ -332,7 +332,7 @@ export function OpenTuiDataTable<T, C extends DataTableColumn = DataTableColumn>
           height={1}
           {...tableContentWidthProps(contentWidth)}
           paddingX={horizontalPadding}
-          backgroundColor={colors.panel}
+          backgroundColor="transparent"
         >
           {displayColumns.map((column, columnIndex) => {
             const isSorted = sortColumnId === column.id;
@@ -351,7 +351,7 @@ export function OpenTuiDataTable<T, C extends DataTableColumn = DataTableColumn>
               <Box
                 key={column.id}
                 width={column.width + columnGap}
-                backgroundColor={column.headerBackgroundColor ?? colors.panel}
+                backgroundColor={column.headerBackgroundColor ?? "transparent"}
                 onMouseDown={(event: any) => {
                   focusPane();
                   onTableMouseDown?.(event);
@@ -377,9 +377,10 @@ export function OpenTuiDataTable<T, C extends DataTableColumn = DataTableColumn>
         width="100%"
         flexGrow={1}
         flexBasis={0}
-        backgroundColor={colors.bg}
+        backgroundColor="transparent"
         scrollX={showHorizontalScrollbar}
         scrollY
+        verticalScrollbarOptions={{ trackOptions: { backgroundColor: "transparent" } }}
         focusable={false}
         onMouseDown={() => {
           focusPane();
@@ -410,7 +411,7 @@ export function OpenTuiDataTable<T, C extends DataTableColumn = DataTableColumn>
                       height={1}
                       {...tableContentWidthProps(contentWidth)}
                       paddingX={horizontalPadding}
-                      backgroundColor={sectionHeader.backgroundColor ?? colors.bg}
+                      backgroundColor={sectionHeader.backgroundColor ?? "transparent"}
                       onMouseDown={(event: any) => {
                         focusPane();
                         onTableMouseDown?.(event);
@@ -437,7 +438,7 @@ export function OpenTuiDataTable<T, C extends DataTableColumn = DataTableColumn>
                 );
                 const rowBg = selected
                   ? colors.selected
-                  : rowBackgroundColor ?? colors.bg;
+                  : rowBackgroundColor ?? "transparent";
                 const rowHoverBg = selected ? undefined : hoverBg(colors);
 
                 return (

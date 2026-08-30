@@ -121,6 +121,52 @@ function normalizeTheme(theme: Theme): Theme {
 }
 
 const rawThemes: Record<string, Theme> = {
+  terminal: {
+    name: "Terminal",
+    description: "Inherits the terminal's active color palette",
+    bg: "#000000",
+    panel: "#000000",
+    border: "#666666",
+    borderFocused: "#00ffff",
+    text: "#c0c0c0",
+    textDim: "#999999",
+    textBright: "#ffffff",
+    textMuted: "#777777",
+    positive: "#00aa00",
+    negative: "#cc0000",
+    neutral: "#6666cc",
+    warning: "#cccc00",
+    header: "#333333",
+    headerText: "#ffffff",
+    selected: "#444444",
+    selectedText: "#ffffff",
+    commandBg: "#000000",
+    commandBorder: "#00ffff",
+  },
+
+  bloomberg: {
+    name: "Bloomberg",
+    description: "Dense market workstation with disciplined orange accents",
+    bg: "#050607",
+    panel: "#0b0f13",
+    border: "#26313a",
+    borderFocused: "#607383",
+    text: "#d6dde3",
+    textDim: "#91a0ac",
+    textBright: "#ffffff",
+    textMuted: "#667681",
+    positive: "#39d27d",
+    negative: "#ff5c61",
+    neutral: "#62a8ff",
+    warning: "#ffc247",
+    header: "#111820",
+    headerText: "#ffad22",
+    selected: "#243443",
+    selectedText: "#ffffff",
+    commandBg: "#090c10",
+    commandBorder: "#ff9d00",
+  },
+
   amber: {
     name: "Amber",
     description: "Classic amber-on-black terminal",
@@ -640,4 +686,10 @@ export function getThemeIds(): string[] {
 
 export function getTheme(id: string): Theme {
   return themes[id] ?? themes[DEFAULT_THEME]!;
+}
+
+export function registerRuntimeTheme(id: string, theme: Theme): Theme {
+  const normalized = normalizeTheme(theme);
+  themes[id] = normalized;
+  return normalized;
 }

@@ -1,7 +1,10 @@
 import { startOpenTuiApp } from "./renderers/opentui/start";
-import { createWebAnalyticsLaunchRequest } from "./plugins/builtin/web-analytics";
+import { createWebAnalyticsLaunchRequest, webAnalyticsPlugin } from "./plugins/builtin/web-analytics";
 
-startOpenTuiApp({ cliLaunchRequest: createWebAnalyticsLaunchRequest() }).catch((err) => {
+startOpenTuiApp({
+  cliLaunchRequest: createWebAnalyticsLaunchRequest(),
+  plugins: [webAnalyticsPlugin],
+}).catch((err) => {
   console.error("Fatal error:", err);
   process.exitCode = 1;
 });

@@ -1,8 +1,11 @@
 import type { AppSessionSnapshot } from "../../../core/state/session-persistence";
+import { createElement } from "react";
 import type { LayoutConfig } from "../../../types/config";
 import { cloneLayout } from "../../../types/config";
 import type { CliLaunchRequest, GloomPlugin } from "../../../types/plugin";
-import { RevenueOverviewPane, StripeCheckoutsPane, TrafficBreakdownsPane } from "./panes";
+import { AnalyticsHeaderActions, AnalyticsHeaderTabs, RevenueOverviewPane, StripeCheckoutsPane, TrafficBreakdownsPane } from "./panes";
+import { webAnalyticsSnapshotCapability } from "./capability";
+import { attachAnalyticsPersistence, resetAnalyticsPersistence } from "./sites";
 
 const OVERVIEW_INSTANCE_ID = "web-analytics-overview:main";
 const BREAKDOWNS_INSTANCE_ID = "web-analytics-breakdowns:main";
@@ -36,7 +39,7 @@ function analyticsSession(snapshot: AppSessionSnapshot | null | undefined): AppS
     paneState: {},
     focusedPaneId: OVERVIEW_INSTANCE_ID,
     activePanel: snapshot?.activePanel === "right" ? "right" : "left",
-    statusBarVisible: snapshot?.statusBarVisible !== false,
+    statusBarVisible: false,
     openPaneIds: [OVERVIEW_INSTANCE_ID, BREAKDOWNS_INSTANCE_ID, CHECKOUTS_INSTANCE_ID],
     hydrationTargets: [],
     exchangeCurrencies: [],
@@ -52,10 +55,8 @@ export function createWebAnalyticsLaunchRequest(): CliLaunchRequest {
         config: {
           ...config,
           layout,
-          layouts: [
-            ...config.layouts.filter((entry) => entry.name !== "Analytics"),
-            { name: "Analytics", layout: cloneLayout(layout), paneState: {} },
-          ],
+          activeLayoutIndex: 0,
+          layouts: [{ name: "Analytics", layout: cloneLayout(layout), paneState: {} }],
         },
       };
     },
@@ -71,6 +72,17 @@ export const webAnalyticsPlugin: GloomPlugin = {
   version: "1.0.0",
   description: "Google Analytics traffic, Stripe checkouts, and revenue attribution.",
   toggleable: true,
+  setup(ctx) {
+    attachAnalyticsPersistence(ctx.persistence);
+  },
+  dispose() {
+    resetAnalyticsPersistence();
+  },
+  capabilities: [webAnalyticsSnapshotCapability],
+  slots: {
+    "header:navigation": () => createElement(AnalyticsHeaderTabs),
+    "header:actions": () => createElement(AnalyticsHeaderActions),
+  },
   cliCommands: [{
     name: "analytics",
     aliases: ["ga", "signalbase"],
@@ -87,6 +99,7 @@ export const webAnalyticsPlugin: GloomPlugin = {
       defaultPosition: "right",
       defaultMode: "floating",
       defaultFloatingSize: { width: 116, height: 28 },
+      hideTerminalDockedHeader: true,
     },
     {
       id: "web-analytics-breakdowns",
@@ -96,6 +109,7 @@ export const webAnalyticsPlugin: GloomPlugin = {
       defaultPosition: "left",
       defaultMode: "floating",
       defaultFloatingSize: { width: 72, height: 22 },
+      hideTerminalDockedHeader: true,
     },
     {
       id: "web-analytics-checkouts",
@@ -106,6 +120,7 @@ export const webAnalyticsPlugin: GloomPlugin = {
       defaultMode: "floating",
       defaultFloatingSize: { width: 100, height: 24 },
       tableExport: true,
+      hideTerminalDockedHeader: true,
     },
   ],
   paneTemplates: [
